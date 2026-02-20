@@ -2,6 +2,9 @@
 --  Ghost v2  —  Rayfield Edition
 --  Put Rayfield module in game.ReplicatedStorage named "Rayfield"
 -- ================================================================
+print("Initializing...")
+task.wait(2) -- small delay so it looks cleaner
+print("Waiting for key...")
 
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local Players         = game:GetService("Players")
@@ -113,6 +116,9 @@ local Window = Rayfield:CreateWindow({
         GrabKeyFromSite = false, -- set true if using website
         Key = {"GhostV2.Uni!"} -- valid keys
 })
+
+Rayfield:OnKeySystem(function(correctKey)
+    print("Correct key entered! ✅ Launching Ghost V2"
 
 local TabCombat   = Window:CreateTab("Combat",   "crosshair")
 local TabVisual   = Window:CreateTab("Visual",   "eye")
