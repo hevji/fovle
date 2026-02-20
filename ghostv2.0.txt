@@ -1,0 +1,977 @@
+-- ================================================================
+--  Ghost v2  —  Rayfield Edition
+--  Put Rayfield module in game.ReplicatedStorage named "Rayfield"
+-- ================================================================
+
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players         = game:GetService("Players")
+local RunService      = game:GetService("RunService")
+local UserInputService= game:GetService("UserInputService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService     = game:GetService("HttpService")
+
+local LP     = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- ================================================================
+--  CONFIG  (tweak these)
+-- ================================================================
+local ESP_DURATION     = math.huge   -- seconds ESP stays active
+local FLY_DURATION     = math.huge   -- seconds fly stays active
+local AIMLOCK_DURATION = math.huge   -- seconds aimlock stays active
+local COOLDOWN_TIME    = 0.1   -- cooldown after ability expires
+local AIMLOCK_SMOOTH   = 1 -- aimlock lerp factor (0-1)
+local AIMLOCK_PART     = "Head"
+local FOV_RADIUS       = 120  -- pixels, used for both circle and aimlock range
+local REWARD_THRESHOLD = 60   -- idle seconds before bonus
+local REWARD_BONUS     = math.huge   -- bonus seconds banked per threshold
+
+-- Drawing colors
+local ESP_FALLBACK_COLOR = Color3.fromRGB(255, 50,  50)
+local NAMETAG_COLOR      = Color3.fromRGB(0,   255, 140)
+local HEALTHBAR_BG_COLOR = Color3.fromRGB(20,  20,  20)
+local FOV_COLOR          = Color3.fromRGB(0,   255, 140)
+
+-- ================================================================
+--  STATE
+-- ================================================================
+local aimlockActive    = false
+local aimlockCooldown  = false
+local aimlockTimer     = 0
+local aimlockCoolTimer = 0
+local aimlockRMBHeld   = false
+local aimlockEnabled   = true
+local aimlockMode      = "Camera"   -- "Camera" | "Mouse"
+local teamCheckEnabled = true
+local silentAimEnabled = false
+local silentTarget     = nil
+local rewardIdleTime   = 0
+local rewardBonus      = 0
+
+local espActive        = false
+local espCooldown      = false
+local espTimer         = 0
+local espCoolTimer     = 0
+local espHighlights    = {}   -- [player] = Highlight instance
+local espTracers       = {}   -- [player] = Drawing Line
+local nametagDrawings  = {}   -- [player] = Drawing Text
+local hpBarBGs         = {}   -- [player] = Drawing Line
+local hpBarFills       = {}   -- [player] = Drawing Line
+local showTracers      = true
+local showNametags     = false
+local showHealthBars   = false
+local showFOV          = false
+
+local flyActive        = false
+local flyCooldown      = false
+local flyTimer         = 0
+local flyCoolTimer     = 0
+local flyBV            = nil
+local flyBG            = nil
+local flyConn          = nil
+local flySpeed         = 50
+
+local speedEnabled     = false
+local BASE_SPEED       = 16
+local infJumpConn      = nil
+local noclipConn       = nil
+local noclipEnabled    = false
+
+local lagSwitchEnabled = false
+local lagActive        = false
+local antiAfkConn      = nil
+local clickTpConn      = nil
+local teleportCharges  = math.huge
+local selectedTarget   = nil  -- Player instance
+
+local NOCLIP_SET = {}
+for _, n in ipairs({
+    "HumanoidRootPart","Head","Torso","UpperTorso","LowerTorso",
+    "LeftArm","RightArm","LeftLeg","RightLeg",
+    "LeftUpperArm","LeftLowerArm","LeftHand",
+    "RightUpperArm","RightLowerArm","RightHand",
+    "LeftUpperLeg","LeftLowerLeg","LeftFoot",
+    "RightUpperLeg","RightLowerLeg","RightFoot",
+}) do NOCLIP_SET[n] = true end
+
+-- ================================================================
+--  RAYFIELD WINDOW
+-- ================================================================
+local Window = Rayfield:CreateWindow({
+    Name                = "Ghost v2",
+    LoadingTitle        = "Ghost v2",
+    LoadingSubtitle     = "Initialising modules...",
+    ConfigurationSaving = { Enabled = false },
+    Discord             = { Enabled = false },
+    KeySystem           = false,
+})
+
+local TabCombat   = Window:CreateTab("Combat",   "crosshair")
+local TabVisual   = Window:CreateTab("Visual",   "eye")
+local TabMovement = Window:CreateTab("Movement", "wind")
+local TabUtility  = Window:CreateTab("Utility",  "wrench")
+
+-- ================================================================
+--  DRAWING HELPERS
+-- ================================================================
+local function newLine(color, thickness)
+    local l = Drawing.new("Line")
+    l.Visible      = false
+    l.Color        = color
+    l.Thickness    = thickness
+    l.Transparency = 0
+    return l
+end
+
+local function newText(color, size)
+    local t = Drawing.new("Text")
+    t.Visible      = false
+    t.Color        = color
+    t.Size         = size
+    t.Font         = 2            -- 2 = Monospace, works on all executors
+    t.Center       = true
+    t.Outline      = true
+    t.OutlineColor = Color3.new(0, 0, 0)
+    return t
+end
+
+local fovCircle = nil
+local function getFOVCircle()
+    if not fovCircle then
+        fovCircle              = Drawing.new("Circle")
+        fovCircle.Visible      = false
+        fovCircle.Color        = FOV_COLOR
+        fovCircle.Thickness    = 1
+        fovCircle.Transparency = 0
+        fovCircle.Filled       = false
+        fovCircle.NumSides     = 64
+        fovCircle.Radius       = FOV_RADIUS
+    end
+    return fovCircle
+end
+
+-- ================================================================
+--  ESP  (Highlights + Drawing overlays)
+-- ================================================================
+local function getTeamColor(player)
+    if player.Team and player.TeamColor then
+        return player.TeamColor.Color
+    end
+    return ESP_FALLBACK_COLOR
+end
+
+local function ensureDrawings(player)
+    if not espTracers[player] then
+        espTracers[player] = newLine(getTeamColor(player), 1.5)
+    end
+    if not nametagDrawings[player] then
+        nametagDrawings[player] = newText(NAMETAG_COLOR, 13)
+    end
+    if not hpBarBGs[player] then
+        hpBarBGs[player]   = newLine(HEALTHBAR_BG_COLOR, 4)
+        hpBarFills[player] = newLine(Color3.fromRGB(0, 200, 80), 3)
+    end
+end
+
+local function clearAllDrawings()
+    for _, l in pairs(espTracers)     do pcall(function() l:Remove() end) end
+    for _, t in pairs(nametagDrawings) do pcall(function() t:Remove() end) end
+    for _, b in pairs(hpBarBGs)        do pcall(function() b:Remove() end) end
+    for _, f in pairs(hpBarFills)      do pcall(function() f:Remove() end) end
+    espTracers = {}; nametagDrawings = {}; hpBarBGs = {}; hpBarFills = {}
+end
+
+local function clearESP()
+    for _, h in pairs(espHighlights) do
+        if h and h.Parent then h:Destroy() end
+    end
+    espHighlights = {}
+    clearAllDrawings()
+end
+
+local function addHighlight(player)
+    if player == LP then return end
+    local char = player.Character; if not char then return end
+    local old = espHighlights[player]
+    if old and old.Parent then old:Destroy() end
+    local col = getTeamColor(player)
+    local hl  = Instance.new("Highlight")
+    hl.Adornee             = char
+    hl.FillColor           = col
+    hl.OutlineColor        = col
+    hl.FillTransparency    = 0.65
+    hl.OutlineTransparency = 0
+    hl.DepthMode           = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent              = char
+    espHighlights[player]  = hl
+    ensureDrawings(player)
+end
+
+local function activateESP()
+    clearESP()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LP then addHighlight(p) end
+    end
+end
+
+-- Called every RenderStepped while ESP is active
+local function updateDrawings()
+    local vp     = Camera.ViewportSize
+    local origin = Vector2.new(vp.X / 2, vp.Y)  -- bottom-center of screen
+
+    for player in pairs(espHighlights) do
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        local hum  = char and char:FindFirstChildOfClass("Humanoid")
+        local head = char and char:FindFirstChild("Head")
+
+        -- helper: hide this player's drawings
+        local function hide()
+            if espTracers[player]      then espTracers[player].Visible      = false end
+            if nametagDrawings[player] then nametagDrawings[player].Visible  = false end
+            if hpBarBGs[player]        then hpBarBGs[player].Visible         = false end
+            if hpBarFills[player]      then hpBarFills[player].Visible       = false end
+        end
+
+        if not root then hide(); continue end
+
+        local sp3, onScreen = Camera:WorldToViewportPoint(root.Position)
+        local sp2 = Vector2.new(sp3.X, sp3.Y)
+
+        -- Tracer  (bottom-center → player root)
+        local tl = espTracers[player]
+        if tl then
+            if showTracers and onScreen then
+                tl.From = origin; tl.To = sp2; tl.Visible = true
+            else tl.Visible = false end
+        end
+
+        -- Nametag  (above head)
+        local nt = nametagDrawings[player]
+        if nt then
+            if showNametags and onScreen and head then
+                local abovePos = head.Position + Vector3.new(0, 2.4, 0)
+                local hp3, hs  = Camera:WorldToViewportPoint(abovePos)
+                if hs then
+                    nt.Position = Vector2.new(hp3.X, hp3.Y)
+                    local dist  = math.floor((root.Position - Camera.CFrame.Position).Magnitude)
+                    nt.Text     = player.Name .. "  " .. dist .. "m"
+                    nt.Visible  = true
+                else nt.Visible = false end
+            else nt.Visible = false end
+        end
+
+        -- Health bar  (vertical, left of player)
+        local bg  = hpBarBGs[player]
+        local fil = hpBarFills[player]
+        if bg and fil then
+            if showHealthBars and onScreen and hum then
+                local H   = 40
+                local bx  = sp2.X - 28
+                bg.From   = Vector2.new(bx, sp2.Y - H/2)
+                bg.To     = Vector2.new(bx, sp2.Y + H/2)
+                bg.Visible = true
+                local pct = math.clamp(hum.Health / math.max(hum.MaxHealth, 1), 0, 1)
+                fil.From  = Vector2.new(bx, sp2.Y + H/2)
+                fil.To    = Vector2.new(bx, sp2.Y + H/2 - H * pct)
+                fil.Color = Color3.fromRGB(math.floor(255*(1-pct)), math.floor(200*pct), 30)
+                fil.Visible = true
+            else bg.Visible = false; fil.Visible = false end
+        end
+    end
+end
+
+-- RenderStepped drives all Drawing-based overlays
+RunService.RenderStepped:Connect(function()
+    if espActive then updateDrawings() end
+
+    -- FOV circle  (always centered, visible when toggle is on)
+    local fc = getFOVCircle()
+    if showFOV then
+        local vp    = Camera.ViewportSize
+        fc.Position = Vector2.new(vp.X / 2, vp.Y / 2)
+        fc.Radius   = FOV_RADIUS
+        fc.Visible  = true
+    else
+        fc.Visible = false
+    end
+end)
+
+-- ================================================================
+--  FLY
+-- ================================================================
+local function stopFly()
+    if flyBV   then flyBV:Destroy();         flyBV   = nil end
+    if flyBG   then flyBG:Destroy();         flyBG   = nil end
+    if flyConn then flyConn:Disconnect();    flyConn = nil end
+    local char = LP.Character
+    if char then
+        local h = char:FindFirstChildOfClass("Humanoid")
+        if h then h.PlatformStand = false end
+    end
+end
+
+local function startFly()
+    local char = LP.Character;          if not char then return end
+    local hrp  = char:FindFirstChild("HumanoidRootPart")
+    local hum  = char:FindFirstChildOfClass("Humanoid")
+    if not hrp or not hum then return end
+
+    hum.PlatformStand = true
+
+    flyBV            = Instance.new("BodyVelocity")
+    flyBV.Velocity   = Vector3.zero
+    flyBV.MaxForce   = Vector3.new(1e5, 1e5, 1e5)
+    flyBV.Parent     = hrp
+
+    flyBG            = Instance.new("BodyGyro")
+    flyBG.MaxTorque  = Vector3.new(1e5, 1e5, 1e5)
+    flyBG.D          = 100
+    flyBG.Parent     = hrp
+
+    flyConn = RunService.Heartbeat:Connect(function()
+        if not flyBV or not flyBV.Parent then return end
+        local d  = Vector3.zero
+        local cf = Camera.CFrame
+        if UserInputService:IsKeyDown(Enum.KeyCode.W)         then d += cf.LookVector      end
+        if UserInputService:IsKeyDown(Enum.KeyCode.S)         then d -= cf.LookVector      end
+        if UserInputService:IsKeyDown(Enum.KeyCode.A)         then d -= cf.RightVector     end
+        if UserInputService:IsKeyDown(Enum.KeyCode.D)         then d += cf.RightVector     end
+        if UserInputService:IsKeyDown(Enum.KeyCode.Space)     then d += Vector3.new(0,1,0) end
+        if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then d -= Vector3.new(0,1,0) end
+        flyBV.Velocity = (d.Magnitude > 0 and d.Unit or Vector3.zero) * flySpeed
+        flyBG.CFrame   = cf
+    end)
+end
+
+-- ================================================================
+--  AIMLOCK
+-- ================================================================
+local function hasLOS(from, to, targetChar)
+    local dir    = to - from
+    local params = RaycastParams.new()
+    params.FilterDescendantsInstances = { LP.Character or workspace, targetChar }
+    params.FilterType                 = Enum.RaycastFilterType.Exclude
+    return workspace:Raycast(from, dir.Unit * dir.Magnitude, params) == nil
+end
+
+local function getBestTarget()
+    local myChar = LP.Character;          if not myChar then return nil end
+    local myRoot = myChar:FindFirstChild("HumanoidRootPart"); if not myRoot then return nil end
+    local center = Camera.ViewportSize / 2
+    local best, bestDist = nil, math.huge
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LP then continue end
+        local char = player.Character;    if not char then continue end
+        local hum  = char:FindFirstChildOfClass("Humanoid")
+        if not hum or hum.Health <= 0 then continue end
+        local part = char:FindFirstChild(AIMLOCK_PART) or char:FindFirstChild("HumanoidRootPart")
+        if not part then continue end
+        if teamCheckEnabled and player.Team and player.Team == LP.Team then continue end
+        if not hasLOS(myRoot.Position, part.Position, char) then continue end
+        local sp, vis = Camera:WorldToViewportPoint(part.Position)
+        if vis then
+            local d = (Vector2.new(sp.X, sp.Y) - center).Magnitude
+            if d < FOV_RADIUS and d < bestDist then
+                bestDist = d; best = part
+            end
+        end
+    end
+    return best
+end
+
+-- ================================================================
+--  SPEED / INF JUMP / NOCLIP
+-- ================================================================
+local function applySpeed()
+    local char = LP.Character;      if not char then return end
+    local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+    hum.WalkSpeed = speedEnabled and BASE_SPEED * 2 or BASE_SPEED
+end
+
+local function toggleInfJump(on)
+    if infJumpConn then infJumpConn:Disconnect(); infJumpConn = nil end
+    if not on then return end
+    infJumpConn = UserInputService.JumpRequest:Connect(function()
+        local char = LP.Character; if not char then return end
+        local hum  = char:FindFirstChildOfClass("Humanoid"); if not hum then return end
+        hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    end)
+end
+
+local function toggleNoclip(on)
+    noclipEnabled = on
+    if noclipConn then noclipConn:Disconnect(); noclipConn = nil end
+    if not on then
+        local char = LP.Character
+        if char then
+            for _, p in ipairs(char:GetChildren()) do
+                if p:IsA("BasePart") and NOCLIP_SET[p.Name] then
+                    p.CanCollide = true
+                end
+            end
+        end
+        return
+    end
+    noclipConn = RunService.Stepped:Connect(function()
+        local char = LP.Character; if not char then return end
+        for _, p in ipairs(char:GetChildren()) do
+            if p:IsA("BasePart") and NOCLIP_SET[p.Name] then
+                p.CanCollide = false
+            end
+        end
+    end)
+end
+
+-- ================================================================
+--  ANTI-AFK
+-- ================================================================
+local function toggleAntiAfk(on)
+    if antiAfkConn then antiAfkConn:Disconnect(); antiAfkConn = nil end
+    if not on then return end
+    local t = 0
+    antiAfkConn = RunService.Heartbeat:Connect(function(dt)
+        t = t + dt
+        if t >= 58 then
+            t = 0
+            pcall(function()
+                local vim = game:GetService("VirtualInputManager")
+                vim:SendKeyEvent(true,  Enum.KeyCode.W, false, game)
+                vim:SendKeyEvent(false, Enum.KeyCode.W, false, game)
+            end)
+        end
+    end)
+end
+
+-- ================================================================
+--  CLICK TELEPORT
+-- ================================================================
+local function toggleClickTp(on)
+    if clickTpConn then clickTpConn:Disconnect(); clickTpConn = nil end
+    if not on then return end
+    clickTpConn = UserInputService.InputBegan:Connect(function(inp, proc)
+        if proc then return end
+        if inp.UserInputType == Enum.UserInputType.MouseButton1
+            and UserInputService:IsKeyDown(Enum.KeyCode.G) then
+            local ray = Camera:ScreenPointToRay(inp.Position.X, inp.Position.Y)
+            local res = workspace:Raycast(ray.Origin, ray.Direction * 2000)
+            if res then
+                local hrp = LP.Character and LP.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.CFrame = CFrame.new(res.Position + Vector3.new(0, 4, 0))
+                    Rayfield:Notify({ Title = "Click TP", Content = "Warped to cursor!", Duration = 2 })
+                end
+            end
+        end
+    end)
+end
+
+-- ================================================================
+--  SILENT AIM
+-- ================================================================
+RunService.RenderStepped:Connect(function()
+    silentTarget = silentAimEnabled and getBestTarget() or nil
+end)
+
+local function hookSilentAim()
+    local char = LP.Character; if not char then return end
+    for _, tool in ipairs(char:GetChildren()) do
+        if tool:IsA("Tool") then
+            tool.Activated:Connect(function()
+                if not silentAimEnabled or not silentTarget then return end
+                if not silentTarget.Parent then silentTarget = nil; return end
+                local orig    = Camera.CFrame
+                Camera.CFrame = CFrame.new(orig.Position, silentTarget.Position)
+                task.defer(function() Camera.CFrame = orig end)
+            end)
+        end
+    end
+end
+
+do  -- hook on existing character
+    if LP.Character then
+        task.spawn(function() task.wait(0.5); hookSilentAim() end)
+        LP.Character.ChildAdded:Connect(function(c)
+            if c:IsA("Tool") then task.wait(0.1); hookSilentAim() end
+        end)
+    end
+end
+
+LP.CharacterAdded:Connect(function(char)
+    task.wait(0.5); hookSilentAim()
+    char.ChildAdded:Connect(function(c)
+        if c:IsA("Tool") then task.wait(0.1); hookSilentAim() end
+    end)
+end)
+
+-- ================================================================
+--  ABILITY ACTIVATE HELPERS
+-- ================================================================
+local function tryActivateESP()
+    if espActive then
+        Rayfield:Notify({ Title = "ESP", Content = "Already active!", Duration = 2 }); return
+    end
+    if espCooldown then
+        Rayfield:Notify({ Title = "ESP", Content = "On cooldown!", Duration = 2 }); return
+    end
+    espActive = true; espTimer = ESP_DURATION
+    activateESP()
+    Rayfield:Notify({ Title = "ESP", Content = "Active for " .. ESP_DURATION .. "s  |  key: [E]", Duration = 3 })
+end
+
+local function tryToggleFly()
+    if flyActive then
+        flyActive = false; flyTimer = 0
+        flyCooldown = true; flyCoolTimer = COOLDOWN_TIME
+        stopFly()
+        Rayfield:Notify({ Title = "Fly", Content = "Stopped — " .. COOLDOWN_TIME .. "s cooldown", Duration = 3 })
+    elseif flyCooldown then
+        Rayfield:Notify({ Title = "Fly", Content = "On cooldown!", Duration = 2 })
+    else
+        flyActive = true; flyTimer = FLY_DURATION
+        startFly()
+        Rayfield:Notify({ Title = "Fly", Content = "Active for " .. FLY_DURATION .. "s  |  WASD + Space/Shift", Duration = 4 })
+    end
+end
+
+local function tryActivateAimlock()
+    if not aimlockEnabled then return end
+    if aimlockActive or aimlockCooldown then return end
+    local dur   = AIMLOCK_DURATION + rewardBonus
+    rewardBonus = 0; rewardIdleTime = 0
+    aimlockActive = true; aimlockTimer = dur
+    Rayfield:Notify({ Title = "Aimlock", Content = "Active for " .. dur .. "s — hold RMB", Duration = 3 })
+end
+
+-- ================================================================
+--  INPUT  (keyboard shortcuts + RMB aimlock + lag switch key)
+-- ================================================================
+UserInputService.InputBegan:Connect(function(inp, proc)
+    if proc then return end
+
+    if inp.KeyCode == Enum.KeyCode.E then tryActivateESP() end
+    if inp.KeyCode == Enum.KeyCode.F then tryToggleFly()   end
+
+    if inp.UserInputType == Enum.UserInputType.MouseButton2 then
+        if aimlockEnabled then
+            aimlockRMBHeld = true
+            tryActivateAimlock()
+        end
+    end
+
+    if inp.KeyCode == Enum.KeyCode.L and lagSwitchEnabled then
+        lagActive = true
+        Rayfield:Notify({ Title = "Lag Switch", Content = "ACTIVE — release L to stop", Duration = 2 })
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(inp)
+    if inp.UserInputType == Enum.UserInputType.MouseButton2 then
+        aimlockRMBHeld = false
+    end
+    if inp.KeyCode == Enum.KeyCode.L then
+        lagActive = false
+    end
+end)
+
+-- Lag switch busy-wait
+RunService.Heartbeat:Connect(function()
+    if lagActive then
+        local s = os.clock()
+        while os.clock() - s < 0.05 do end
+    end
+end)
+
+-- ================================================================
+--  COMBAT TAB
+-- ================================================================
+TabCombat:CreateSection("Aimlock")
+
+TabCombat:CreateButton({
+    Name     = "Activate Aimlock  (or hold RMB)",
+    Callback = tryActivateAimlock,
+})
+
+TabCombat:CreateToggle({
+    Name         = "Aimlock Enabled",
+    CurrentValue = true,
+    Flag         = "AimlockEnabled",
+    Callback     = function(v) aimlockEnabled = v end,
+})
+
+TabCombat:CreateDropdown({
+    Name          = "Lock Mode",
+    Options       = { "Camera", "Mouse" },
+    CurrentOption = "Camera",
+    Flag          = "AimlockMode",
+    Callback      = function(v)
+        -- Rayfield passes the selected string directly
+        aimlockMode = type(v) == "table" and v[1] or v
+    end,
+})
+
+TabCombat:CreateToggle({
+    Name         = "Team Check  (skip teammates)",
+    CurrentValue = true,
+    Flag         = "TeamCheck",
+    Callback     = function(v) teamCheckEnabled = v end,
+})
+
+TabCombat:CreateToggle({
+    Name         = "Silent Aim",
+    CurrentValue = false,
+    Flag         = "SilentAim",
+    Callback     = function(v) silentAimEnabled = v end,
+})
+
+local RewardLabel = TabCombat:CreateLabel(
+    "Idle bonus: +0s  [0 / " .. REWARD_THRESHOLD .. "s]"
+)
+
+-- ================================================================
+--  VISUAL TAB
+-- ================================================================
+TabVisual:CreateSection("ESP  (key: E)")
+
+TabVisual:CreateButton({
+    Name     = "Activate ESP",
+    Callback = tryActivateESP,
+})
+
+TabVisual:CreateToggle({
+    Name         = "Tracers",
+    CurrentValue = true,
+    Flag         = "Tracers",
+    Callback     = function(v) showTracers = v end,
+})
+
+TabVisual:CreateToggle({
+    Name         = "Nametags",
+    CurrentValue = false,
+    Flag         = "Nametags",
+    Callback     = function(v) showNametags = v end,
+})
+
+TabVisual:CreateToggle({
+    Name         = "Health Bars",
+    CurrentValue = false,
+    Flag         = "HealthBars",
+    Callback     = function(v) showHealthBars = v end,
+})
+
+TabVisual:CreateSection("Overlay")
+
+TabVisual:CreateToggle({
+    Name         = "FOV Circle",
+    CurrentValue = false,
+    Flag         = "FOVCircle",
+    Callback     = function(v) showFOV = v end,
+})
+
+TabVisual:CreateSlider({
+    Name         = "FOV Radius",
+    Range        = { 50, 300 },
+    Increment    = 5,
+    Suffix       = "px",
+    CurrentValue = FOV_RADIUS,
+    Flag         = "FOVRadius",
+    Callback     = function(v)
+        FOV_RADIUS = v
+        if fovCircle then fovCircle.Radius = v end
+    end,
+})
+
+-- ================================================================
+--  MOVEMENT TAB
+-- ================================================================
+TabMovement:CreateSection("Fly  (key: F)")
+
+TabMovement:CreateButton({
+    Name     = "Toggle Fly",
+    Callback = tryToggleFly,
+})
+
+TabMovement:CreateSlider({
+    Name         = "Fly Speed",
+    Range        = { 10, 200 },
+    Increment    = 5,
+    Suffix       = " studs/s",
+    CurrentValue = flySpeed,
+    Flag         = "FlySpeed",
+    Callback     = function(v) flySpeed = v end,
+})
+
+TabMovement:CreateSection("Other")
+
+TabMovement:CreateToggle({
+    Name         = "Speed Hack  (x2 WalkSpeed)",
+    CurrentValue = false,
+    Flag         = "SpeedHack",
+    Callback     = function(v) speedEnabled = v; applySpeed() end,
+})
+
+TabMovement:CreateToggle({
+    Name         = "Infinite Jump",
+    CurrentValue = false,
+    Flag         = "InfJump",
+    Callback     = toggleInfJump,
+})
+
+TabMovement:CreateToggle({
+    Name         = "No-Clip",
+    CurrentValue = false,
+    Flag         = "Noclip",
+    Callback     = toggleNoclip,
+})
+
+-- ================================================================
+--  UTILITY TAB
+-- ================================================================
+TabUtility:CreateSection("Teleport to Player")
+
+-- Build a list of player names (excluding self)
+local function getPlayerNames()
+    local t = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= LP then table.insert(t, p.Name) end
+    end
+    if #t == 0 then table.insert(t, "(no players)") end
+    return t
+end
+
+local TpDropdown = TabUtility:CreateDropdown({
+    Name          = "Select Target",
+    Options       = getPlayerNames(),
+    CurrentOption = "(no players)",
+    Flag          = "TpTarget",
+    Callback      = function(v)
+        local name = type(v) == "table" and v[1] or v
+        selectedTarget = Players:FindFirstChild(name) or nil
+    end,
+})
+
+Players.PlayerAdded:Connect(function()
+    TpDropdown:Set(getPlayerNames())
+end)
+Players.PlayerRemoving:Connect(function(p)
+    if selectedTarget == p then selectedTarget = nil end
+    TpDropdown:Set(getPlayerNames())
+end)
+
+local ChargesLabel = TabUtility:CreateLabel("Charges remaining: " .. teleportCharges)
+
+TabUtility:CreateButton({
+    Name     = "Teleport  (uses 1 charge)",
+    Callback = function()
+        if teleportCharges <= 0 then
+            Rayfield:Notify({ Title = "Teleport", Content = "No charges left!", Duration = 2 }); return
+        end
+        if not selectedTarget or not selectedTarget.Parent then
+            Rayfield:Notify({ Title = "Teleport", Content = "Select a valid target first!", Duration = 2 }); return
+        end
+        local tChar = selectedTarget.Character
+        local tRoot = tChar and tChar:FindFirstChild("HumanoidRootPart")
+        if not tRoot then
+            Rayfield:Notify({ Title = "Teleport", Content = "Target has no character!", Duration = 2 }); return
+        end
+        local myChar = LP.Character
+        local myRoot = myChar and myChar:FindFirstChild("HumanoidRootPart")
+        if not myRoot then return end
+        myRoot.CFrame = tRoot.CFrame * CFrame.new(0, 2, -3)
+        teleportCharges = teleportCharges - 1
+        ChargesLabel:Set("Charges remaining: " .. teleportCharges)
+        Rayfield:Notify({ Title = "Teleport", Content = "Warped to " .. selectedTarget.Name, Duration = 3 })
+    end,
+})
+
+TabUtility:CreateSection("Misc")
+
+TabUtility:CreateToggle({
+    Name         = "Anti-AFK",
+    CurrentValue = false,
+    Flag         = "AntiAfk",
+    Callback     = toggleAntiAfk,
+})
+
+TabUtility:CreateToggle({
+    Name         = "Lag Switch  (hold L while active)",
+    CurrentValue = false,
+    Flag         = "LagSwitch",
+    Callback     = function(v)
+        lagSwitchEnabled = v
+        if not v then lagActive = false end
+        if v then Rayfield:Notify({ Title = "Lag Switch", Content = "Hold [L] to activate", Duration = 3 }) end
+    end,
+})
+
+TabUtility:CreateToggle({
+    Name         = "Click Teleport  (hold G + LMB)",
+    CurrentValue = false,
+    Flag         = "ClickTp",
+    Callback     = toggleClickTp,
+})
+
+TabUtility:CreateButton({
+    Name     = "Rejoin Server",
+    Callback = function()
+        Rayfield:Notify({ Title = "Rejoin", Content = "Rejoining in 1s...", Duration = 2 })
+        task.delay(1, function() TeleportService:Teleport(game.PlaceId, LP) end)
+    end,
+})
+
+TabUtility:CreateButton({
+    Name     = "Server Hop",
+    Callback = function()
+        Rayfield:Notify({ Title = "Server Hop", Content = "Scanning for servers...", Duration = 3 })
+        task.spawn(function()
+            local ok, data = pcall(function()
+                return HttpService:JSONDecode(
+                    game:HttpGet("https://games.roblox.com/v1/games/"
+                        .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=10")
+                )
+            end)
+            if ok and data and data.data then
+                for _, s in ipairs(data.data) do
+                    if s.id ~= game.JobId and s.playing < s.maxPlayers then
+                        TeleportService:TeleportToPlaceInstance(game.PlaceId, s.id, LP)
+                        return
+                    end
+                end
+            end
+            -- fallback: plain rejoin
+            TeleportService:Teleport(game.PlaceId, LP)
+        end)
+    end,
+})
+
+-- ================================================================
+--  MAIN HEARTBEAT  (timers + aimlock logic)
+-- ================================================================
+RunService.Heartbeat:Connect(function(dt)
+
+    -- ESP timer
+    if espActive then
+        espTimer = espTimer - dt
+        if espTimer <= 0 then
+            espActive   = false; espTimer    = 0
+            espCooldown = true;  espCoolTimer = COOLDOWN_TIME
+            clearESP()
+            Rayfield:Notify({ Title = "ESP", Content = "Expired — " .. COOLDOWN_TIME .. "s cooldown", Duration = 3 })
+        end
+    elseif espCooldown then
+        espCoolTimer = espCoolTimer - dt
+        if espCoolTimer <= 0 then
+            espCooldown  = false; espCoolTimer = 0
+            Rayfield:Notify({ Title = "ESP", Content = "Ready!  Press E", Duration = 2 })
+        end
+    end
+
+    -- Fly timer
+    if flyActive then
+        flyTimer = flyTimer - dt
+        if flyTimer <= 0 then
+            flyActive   = false; flyTimer    = 0
+            flyCooldown = true;  flyCoolTimer = COOLDOWN_TIME
+            stopFly()
+            Rayfield:Notify({ Title = "Fly", Content = "Expired — " .. COOLDOWN_TIME .. "s cooldown", Duration = 3 })
+        end
+    elseif flyCooldown then
+        flyCoolTimer = flyCoolTimer - dt
+        if flyCoolTimer <= 0 then
+            flyCooldown  = false; flyCoolTimer = 0
+            Rayfield:Notify({ Title = "Fly", Content = "Ready!  Press F", Duration = 2 })
+        end
+    end
+
+    -- Aimlock idle reward
+    if not aimlockActive then
+        rewardIdleTime = rewardIdleTime + dt
+        if rewardIdleTime >= REWARD_THRESHOLD then
+            rewardIdleTime = rewardIdleTime - REWARD_THRESHOLD
+            rewardBonus    = rewardBonus + REWARD_BONUS
+            Rayfield:Notify({
+                Title   = "Reward",
+                Content = "+" .. REWARD_BONUS .. "s aimlock bonus banked!  Total: +" .. rewardBonus .. "s",
+                Duration = 4,
+            })
+        end
+        -- update the label (pcall in case Rayfield label object varies by version)
+        pcall(function()
+            RewardLabel:Set(
+                "Idle bonus: +" .. rewardBonus .. "s  ["
+                .. math.floor(rewardIdleTime) .. " / " .. REWARD_THRESHOLD .. "s]"
+            )
+        end)
+    end
+
+    -- Aimlock active logic
+    if aimlockActive then
+        if aimlockRMBHeld and aimlockEnabled then
+            local tgt = getBestTarget()
+            if tgt then
+                if aimlockMode == "Camera" then
+                    local cur = Camera.CFrame
+                    Camera.CFrame = cur:Lerp(
+                        CFrame.new(cur.Position, tgt.Position), AIMLOCK_SMOOTH
+                    )
+                else
+                    -- Mouse-move mode
+                    local sp, vis = Camera:WorldToViewportPoint(tgt.Position)
+                    if vis then
+                        local center = Camera.ViewportSize / 2
+                        local delta  = Vector2.new(sp.X, sp.Y) - center
+                        if delta.Magnitude > 1 then
+                            local step = math.min(delta.Magnitude, 18)
+                            mousemoverel(delta.Unit.X * step, delta.Unit.Y * step)
+                        end
+                    end
+                end
+            end
+        end
+
+        aimlockTimer = aimlockTimer - dt
+        if aimlockTimer <= 0 then
+            aimlockActive    = false; aimlockTimer    = 0
+            aimlockRMBHeld   = false
+            aimlockCooldown  = true;  aimlockCoolTimer = COOLDOWN_TIME
+        end
+    elseif aimlockCooldown then
+        aimlockCoolTimer = aimlockCoolTimer - dt
+        if aimlockCoolTimer <= 0 then
+            aimlockCooldown  = false; aimlockCoolTimer = 0
+            Rayfield:Notify({ Title = "Aimlock", Content = "Ready!", Duration = 2 })
+        end
+    end
+end)
+
+-- ================================================================
+--  RESPAWN HANDLING
+-- ================================================================
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if espActive then task.defer(addHighlight, player) end
+    end)
+end)
+for _, player in ipairs(Players:GetPlayers()) do
+    player.CharacterAdded:Connect(function()
+        if espActive then task.defer(addHighlight, player) end
+    end)
+end
+
+LP.CharacterAdded:Connect(function()
+    -- reset fly/aimlock on death
+    flyActive       = false; flyTimer    = 0
+    flyBV           = nil;   flyBG       = nil; flyConn = nil
+    aimlockActive   = false; aimlockTimer = 0; aimlockRMBHeld = false
+    -- reapply persistent states
+    if espActive then task.defer(activateESP) end
+    task.wait(0.1)
+    applySpeed()
+    local wasInfJump = infJumpConn ~= nil
+    if wasInfJump then infJumpConn = nil end   -- old conn is dead after respawn
+    toggleInfJump(wasInfJump)
+    toggleNoclip(noclipEnabled)
+end)
+
+Rayfield:Notify({ Title = "Ghost v2", Content = "All modules loaded!", Duration = 4 })
