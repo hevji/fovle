@@ -6,11 +6,11 @@ StarterGui:SetCore("SendNotification", {
     Duration = 5;
 })
 wait(1)
-print("Initialising")
+print("[Ghost] Initialising")
 wait(0.5)
-print("checking game")
+print("[GhostGameManager] Checking game")
 
-local ALLOWED_PLACE_ID = 155615604  -- ← CHANGE THIS to your game's PlaceId
+local ALLOWED_PLACE_ID = 155615604
 
 local player = game.Players.LocalPlayer
 
@@ -132,7 +132,7 @@ local Window = Rayfield:CreateWindow({
     Discord             = { Enabled = false },
     KeySystem           = false,
 })
-print("Window Loaded")
+print("[Ghost] Window Loaded")
 
 local TabCombat   = Window:CreateTab("Combat",   "crosshair")
 local TabVisual   = Window:CreateTab("Visual",   "eye")
@@ -1013,4 +1013,5 @@ print([[
 #+#    #+# #+#    #+# #+#    #+# #+#    #+#    #+#          
 ########  ###    ###  ########   ########     ###           
 ]])
-print("Ghost loaded, Have fun!")
+print("[Script] Ghost loaded, Have fun!")
+warn("[Script] Failed to load module: online.fovle.ghost.v3.silentaim.module")
