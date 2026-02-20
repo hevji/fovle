@@ -125,7 +125,7 @@ for _, n in ipairs({
 --  RAYFIELD WINDOW
 -- ================================================================
 local Window = Rayfield:CreateWindow({
-    Name                = "Ghost V3",
+    Name                = "Ghost V3 Jailbreak",
     LoadingTitle        = "Ghost V3",
     LoadingSubtitle     = "Initialising modules...",
     ConfigurationSaving = { Enabled = false },
