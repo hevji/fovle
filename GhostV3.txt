@@ -7,6 +7,27 @@ StarterGui:SetCore("SendNotification", {
 })
 wait(1)
 print("Initialising")
+wait(0.5)
+print("checking game")
+
+local ALLOWED_PLACE_ID = 1234567890  -- ← CHANGE THIS to your game's PlaceId
+
+local player = game.Players.LocalPlayer
+
+if game.PlaceId ~= ALLOWED_PLACE_ID then
+    warn("[Anti-Unsupported-Game] This script is not designed for PlaceId: " .. game.PlaceId)
+    print("[Anti-Unsupported-Game] Supported game PlaceId: " .. ALLOWED_PLACE_ID)
+    print("[Anti-Unsupported-Game] You have been kicked from an unsupported game.")
+    
+    -- Small delay helps make sure the prints appear before kick
+    task.wait(0.8)
+    
+    player:Kick("Game not supported")
+    return
+end
+
+-- Only reaches here if you're in the correct game
+print("[Script] Loaded successfully in supported game (PlaceId: " .. game.PlaceId .. ")")
 
 
 local Rayfield        = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
