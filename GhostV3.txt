@@ -10,7 +10,7 @@ print("Initialising")
 wait(0.5)
 print("checking game")
 
-local ALLOWED_PLACE_ID = 1234567890  -- ← CHANGE THIS to your game's PlaceId
+local ALLOWED_PLACE_ID = 155615604  -- ← CHANGE THIS to your game's PlaceId
 
 local player = game.Players.LocalPlayer
 
