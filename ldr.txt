@@ -21,8 +21,7 @@ local FLY_DURATION     = math.huge
 local AIMLOCK_DURATION = math.huge
 local COOLDOWN_TIME    = 0.1
 
-local FLY_SPEED        = 100
-local AIMLOCK_SMOOTH   = 1
+local AIMLOCK_SMOOTH   = 0.15
 local AIMLOCK_PART     = "Head"
 
 local ESP_FILL_COLOR    = Color3.fromRGB(255, 50,  50)
@@ -42,8 +41,16 @@ local aimlockCooldown  = false
 local aimlockTimer     = 0
 local aimlockCoolTimer = 0
 local aimlockRMBHeld   = false
+local aimlockEnabled   = true   -- master on/off toggle (separate from timer)
+local aimlockMode      = "Camera" -- "Camera" or "Mouse"
 local teamCheckEnabled = true
 local silentAimEnabled = false
+
+-- Reward system: track seconds spent without locking
+local rewardIdleTime   = 0      -- seconds accumulated without aimlock active
+local REWARD_THRESHOLD = 60     -- seconds idle before bonus is awarded
+local REWARD_BONUS     = math.huge     -- extra seconds added to next lock duration
+local rewardBonus      = math.huge      -- current banked bonus seconds
 
 -- Visual
 local espActive        = false
@@ -68,6 +75,7 @@ local flyCoolTimer     = 0
 local flyBodyVelocity  = nil
 local flyBodyGyro      = nil
 local flyConnection    = nil
+local FLY_SPEED_CURRENT= 50    -- runtime fly speed (changed by slider)
 local speedEnabled     = false
 local speedValue       = 32   -- default WalkSpeed
 local infiniteJumpEnabled = false
@@ -471,8 +479,49 @@ local combatFrame = tabFrames["Combat"]
 makeSectionHeader(combatFrame, 1, "AIMBOT")
 local aimlockUI = makeAbilityCard(combatFrame, 2, "AIMLOCK", "Hold RMB")
 
-local teamToggle = makeToggleRow(combatFrame, 3, "Team Check", true)
-local silentToggle = makeToggleRow(combatFrame, 4, "Silent Aim", false)
+-- Aimlock master enable toggle
+local aimlockEnabledToggle = makeToggleRow(combatFrame, 3, "Aimlock Enabled", true)
+
+-- Aimlock mode dropdown row
+local aimlockModeRow = Instance.new("Frame")
+aimlockModeRow.Size=UDim2.new(1,0,0,32); aimlockModeRow.BackgroundColor3=Color3.fromRGB(18,22,34)
+aimlockModeRow.BorderSizePixel=0; aimlockModeRow.LayoutOrder=4; aimlockModeRow.Parent=combatFrame
+local AMRC=Instance.new("UICorner"); AMRC.CornerRadius=UDim.new(0,5); AMRC.Parent=aimlockModeRow
+local AMRS=Instance.new("UIStroke"); AMRS.Color=Color3.fromRGB(40,50,70); AMRS.Thickness=1; AMRS.Parent=aimlockModeRow
+local aimlockModeLabel=Instance.new("TextLabel")
+aimlockModeLabel.Size=UDim2.new(0,100,1,0); aimlockModeLabel.Position=UDim2.new(0,10,0,0)
+aimlockModeLabel.BackgroundTransparency=1; aimlockModeLabel.Text="Lock Mode"
+aimlockModeLabel.TextColor3=Color3.fromRGB(160,180,220); aimlockModeLabel.TextSize=11
+aimlockModeLabel.Font=Enum.Font.Gotham; aimlockModeLabel.TextXAlignment=Enum.TextXAlignment.Left
+aimlockModeLabel.Parent=aimlockModeRow
+local aimlockModeBtn=Instance.new("TextButton")
+aimlockModeBtn.Size=UDim2.new(0,110,0,22); aimlockModeBtn.Position=UDim2.new(1,-118,0.5,-11)
+aimlockModeBtn.BackgroundColor3=Color3.fromRGB(0,140,90); aimlockModeBtn.BorderSizePixel=0
+aimlockModeBtn.Text="📷 Camera"; aimlockModeBtn.TextColor3=Color3.fromRGB(255,255,255)
+aimlockModeBtn.TextSize=11; aimlockModeBtn.Font=Enum.Font.GothamBold; aimlockModeBtn.Parent=aimlockModeRow
+local AMBC=Instance.new("UICorner"); AMBC.CornerRadius=UDim.new(0,4); AMBC.Parent=aimlockModeBtn
+aimlockModeBtn.MouseButton1Click:Connect(function()
+    if aimlockMode=="Camera" then
+        aimlockMode="Mouse"
+        aimlockModeBtn.Text="🖱 Mouse"
+        aimlockModeBtn.BackgroundColor3=Color3.fromRGB(100,60,180)
+    else
+        aimlockMode="Camera"
+        aimlockModeBtn.Text="📷 Camera"
+        aimlockModeBtn.BackgroundColor3=Color3.fromRGB(0,140,90)
+    end
+end)
+
+-- Reward status label
+local rewardLabel=Instance.new("TextLabel")
+rewardLabel.Size=UDim2.new(1,0,0,18); rewardLabel.BackgroundTransparency=1
+rewardLabel.Text="⏳ Idle bonus: 0s banked"; rewardLabel.TextColor3=Color3.fromRGB(100,200,100)
+rewardLabel.TextSize=10; rewardLabel.Font=Enum.Font.Gotham
+rewardLabel.TextXAlignment=Enum.TextXAlignment.Left; rewardLabel.LayoutOrder=5
+rewardLabel.Parent=combatFrame
+
+local teamToggle = makeToggleRow(combatFrame, 6, "Team Check", true)
+local silentToggle = makeToggleRow(combatFrame, 7, "Silent Aim", false)
 
 -- ============================================================
 --  VISUAL TAB
@@ -492,10 +541,63 @@ local fovToggle       = makeToggleRow(visualFrame, 7, "FOV Circle", false)
 local movementFrame = tabFrames["Movement"]
 makeSectionHeader(movementFrame, 1, "FLY")
 local flyUI = makeAbilityCard(movementFrame, 2, "FLY", "Key: [F] toggle")
-makeSectionHeader(movementFrame, 3, "OTHER")
-local speedToggle    = makeToggleRow(movementFrame, 4, "Speed Hack (x2)", false)
-local infJumpToggle  = makeToggleRow(movementFrame, 5, "Infinite Jump",   false)
-local noclipToggle   = makeToggleRow(movementFrame, 6, "No-Clip",         false)
+
+-- Fly speed slider row
+local flySpeedRow=Instance.new("Frame")
+flySpeedRow.Size=UDim2.new(1,0,0,42); flySpeedRow.BackgroundColor3=Color3.fromRGB(18,22,34)
+flySpeedRow.BorderSizePixel=0; flySpeedRow.LayoutOrder=3; flySpeedRow.Parent=movementFrame
+local FSRC=Instance.new("UICorner"); FSRC.CornerRadius=UDim.new(0,5); FSRC.Parent=flySpeedRow
+local FSRS=Instance.new("UIStroke"); FSRS.Color=Color3.fromRGB(40,50,70); FSRS.Thickness=1; FSRS.Parent=flySpeedRow
+
+local flySpeedLabel=Instance.new("TextLabel")
+flySpeedLabel.Size=UDim2.new(1,-12,0,18); flySpeedLabel.Position=UDim2.new(0,10,0,4)
+flySpeedLabel.BackgroundTransparency=1; flySpeedLabel.Text="Fly Speed: 50"
+flySpeedLabel.TextColor3=Color3.fromRGB(160,180,220); flySpeedLabel.TextSize=11
+flySpeedLabel.Font=Enum.Font.Gotham; flySpeedLabel.TextXAlignment=Enum.TextXAlignment.Left
+flySpeedLabel.Parent=flySpeedRow
+
+-- Slider track
+local flySliderBG=Instance.new("Frame")
+flySliderBG.Size=UDim2.new(1,-20,0,6); flySliderBG.Position=UDim2.new(0,10,0,28)
+flySliderBG.BackgroundColor3=Color3.fromRGB(30,38,55); flySliderBG.BorderSizePixel=0
+flySliderBG.Parent=flySpeedRow
+local FSBGC=Instance.new("UICorner"); FSBGC.CornerRadius=UDim.new(1,0); FSBGC.Parent=flySliderBG
+
+local flySliderFill=Instance.new("Frame")
+flySliderFill.Size=UDim2.new(0.25,0,1,0) -- default 50 out of max 200 = 25%
+flySliderFill.BackgroundColor3=Color3.fromRGB(0,180,120); flySliderFill.BorderSizePixel=0
+flySliderFill.Parent=flySliderBG
+local FSFC=Instance.new("UICorner"); FSFC.CornerRadius=UDim.new(1,0); FSFC.Parent=flySliderFill
+
+local flySliderKnob=Instance.new("TextButton")
+flySliderKnob.Size=UDim2.new(0,14,0,14); flySliderKnob.AnchorPoint=Vector2.new(0.5,0.5)
+flySliderKnob.Position=UDim2.new(0.25,0,0.5,0)
+flySliderKnob.BackgroundColor3=Color3.fromRGB(255,255,255); flySliderKnob.BorderSizePixel=0
+flySliderKnob.Text=""; flySliderKnob.ZIndex=5; flySliderKnob.Parent=flySliderBG
+local FSKC=Instance.new("UICorner"); FSKC.CornerRadius=UDim.new(1,0); FSKC.Parent=flySliderKnob
+
+-- Slider drag logic (10 to 200 speed)
+local FLY_SPEED_MIN=10; local FLY_SPEED_MAX=200
+local sliderDragging=false
+flySliderKnob.MouseButton1Down:Connect(function() sliderDragging=true end)
+UserInputService.InputEnded:Connect(function(i)
+    if i.UserInputType==Enum.UserInputType.MouseButton1 then sliderDragging=false end
+end)
+UserInputService.InputChanged:Connect(function(i)
+    if sliderDragging and i.UserInputType==Enum.UserInputType.MouseMovement then
+        local absPos=flySliderBG.AbsolutePosition; local absSize=flySliderBG.AbsoluteSize
+        local rel=math.clamp((i.Position.X-absPos.X)/absSize.X,0,1)
+        FLY_SPEED_CURRENT=math.floor(FLY_SPEED_MIN+(FLY_SPEED_MAX-FLY_SPEED_MIN)*rel)
+        flySliderFill.Size=UDim2.new(rel,0,1,0)
+        flySliderKnob.Position=UDim2.new(rel,0,0.5,0)
+        flySpeedLabel.Text="Fly Speed: "..FLY_SPEED_CURRENT
+    end
+end)
+
+makeSectionHeader(movementFrame, 4, "OTHER")
+local speedToggle    = makeToggleRow(movementFrame, 5, "Speed Hack (x2)", false)
+local infJumpToggle  = makeToggleRow(movementFrame, 6, "Infinite Jump",   false)
+local noclipToggle   = makeToggleRow(movementFrame, 7, "No-Clip",         false)
 
 -- ============================================================
 --  UTILITY TAB
@@ -604,9 +706,17 @@ local function clearAllESPDrawings()
     clearTracers(); clearNametags(); clearHealthBars()
 end
 
+local function getPlayerESPColor(player)
+    if player.Team and player.TeamColor then
+        return player.TeamColor.Color
+    end
+    return ESP_FILL_COLOR
+end
+
 local function ensureDrawingsForPlayer(player)
     if not espTracers[player] then
-        espTracers[player] = newLine(TRACER_COLOR, 1.5)
+        local col = getPlayerESPColor(player)
+        espTracers[player] = newLine(col, 1.5)
     end
     if not nametagDrawings[player] then
         nametagDrawings[player] = newText(NAMETAG_COLOR, 13)
@@ -629,9 +739,10 @@ local function activateESP()
         if player==LocalPlayer then continue end
         local char=player.Character
         if char then
+            local teamCol=getPlayerESPColor(player)
             local hl=Instance.new("Highlight")
-            hl.Adornee=char; hl.FillColor=ESP_FILL_COLOR
-            hl.OutlineColor=ESP_OUTLINE_COLOR; hl.FillTransparency=0.6
+            hl.Adornee=char; hl.FillColor=teamCol
+            hl.OutlineColor=teamCol; hl.FillTransparency=0.6
             hl.OutlineTransparency=0; hl.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop
             hl.Parent=char; espHighlights[player]=hl
         end
@@ -644,13 +755,19 @@ local function applyESPToPlayer(player)
     local char=player.Character; if not char then return end
     local old=espHighlights[player]
     if old and old.Parent then old:Destroy() end
+    local teamCol=getPlayerESPColor(player)
     local hl=Instance.new("Highlight")
-    hl.Adornee=char; hl.FillColor=ESP_FILL_COLOR; hl.OutlineColor=ESP_OUTLINE_COLOR
+    hl.Adornee=char; hl.FillColor=teamCol; hl.OutlineColor=teamCol
     hl.FillTransparency=0.6; hl.OutlineTransparency=0
     hl.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop; hl.Parent=char
     espHighlights[player]=hl
     ensureDrawingsForPlayer(player)
 end
+
+-- Tracers/nametags/healthbars update on RenderStepped for smooth visuals
+RunService.RenderStepped:Connect(function()
+    if espActive then updateESPDrawings() end
+end)
 
 local function updateESPDrawings()
     local vp=Camera.ViewportSize
@@ -744,7 +861,7 @@ local function startFly()
         if UserInputService:IsKeyDown(Enum.KeyCode.D)         then d+=cf.RightVector     end
         if UserInputService:IsKeyDown(Enum.KeyCode.Space)     then d+=Vector3.new(0,1,0) end
         if UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) then d-=Vector3.new(0,1,0) end
-        flyBodyVelocity.Velocity=(d.Magnitude>0 and d.Unit or Vector3.zero)*FLY_SPEED
+        flyBodyVelocity.Velocity=(d.Magnitude>0 and d.Unit or Vector3.zero)*FLY_SPEED_CURRENT
         flyBodyGyro.CFrame=cf
     end)
 end
@@ -810,24 +927,34 @@ end
 infJumpToggle.button.MouseButton1Click:Connect(function() task.defer(setupInfiniteJump) end)
 
 -- ============================================================
---  NO-CLIP
+--  NO-CLIP  (only body parts — not accessories/tools)
 -- ============================================================
+local NOCLIP_PARTS = {
+    "HumanoidRootPart","Head","Torso","UpperTorso","LowerTorso",
+    "LeftArm","RightArm","LeftLeg","RightLeg",
+    "LeftUpperArm","LeftLowerArm","LeftHand",
+    "RightUpperArm","RightLowerArm","RightHand",
+    "LeftUpperLeg","LeftLowerLeg","LeftFoot",
+    "RightUpperLeg","RightLowerLeg","RightFoot",
+}
+local NOCLIP_SET = {}
+for _,n in ipairs(NOCLIP_PARTS) do NOCLIP_SET[n]=true end
+
 local function setupNoclip()
     if noclipConnection then noclipConnection:Disconnect(); noclipConnection=nil end
     if not noclipToggle.getState() then
-        -- restore collision
         local char=LocalPlayer.Character
         if char then
-            for _,p in ipairs(char:GetDescendants()) do
-                if p:IsA("BasePart") then p.CanCollide=true end
+            for _,p in ipairs(char:GetChildren()) do
+                if p:IsA("BasePart") and NOCLIP_SET[p.Name] then p.CanCollide=true end
             end
         end
         return
     end
     noclipConnection=RunService.Stepped:Connect(function()
         local char=LocalPlayer.Character; if not char then return end
-        for _,p in ipairs(char:GetDescendants()) do
-            if p:IsA("BasePart") then p.CanCollide=false end
+        for _,p in ipairs(char:GetChildren()) do
+            if p:IsA("BasePart") and NOCLIP_SET[p.Name] then p.CanCollide=false end
         end
     end)
     notify("No-Clip","Walk through walls active",Color3.fromRGB(200,140,255))
@@ -1107,9 +1234,13 @@ local function tryToggleFly()
 end
 
 local function tryActivateAimlock()
+    if not aimlockEnabledToggle.getState() then return end  -- master toggle off
     if aimlockActive or aimlockCooldown then return end
-    aimlockActive=true; aimlockTimer=AIMLOCK_DURATION
-    notify("Aimlock","Active for "..AIMLOCK_DURATION.."s — hold RMB",Color3.fromRGB(255,220,50))
+    local duration = AIMLOCK_DURATION + rewardBonus
+    rewardBonus = 0  -- spend the bonus
+    rewardIdleTime = 0  -- reset idle accumulator
+    aimlockActive=true; aimlockTimer=duration
+    notify("Aimlock","Active for "..duration.."s — hold RMB",Color3.fromRGB(255,220,50))
 end
 
 espUI.button.MouseButton1Click:Connect(tryActivateESP)
@@ -1121,7 +1252,9 @@ UserInputService.InputBegan:Connect(function(input,proc)
     if input.KeyCode==Enum.KeyCode.E      then tryActivateESP()     end
     if input.KeyCode==Enum.KeyCode.F      then tryToggleFly()       end
     if input.UserInputType==Enum.UserInputType.MouseButton2 then
-        aimlockRMBHeld=true; tryActivateAimlock()
+        if aimlockEnabledToggle.getState() then
+            aimlockRMBHeld=true; tryActivateAimlock()
+        end
     end
 end)
 
@@ -1149,7 +1282,6 @@ RunService.Heartbeat:Connect(function(dt)
             clearESP(); setUIState(espUI,"cooldown",1,"COOLDOWN")
             notify("ESP","Expired — "..COOLDOWN_TIME.."s cooldown",Color3.fromRGB(255,80,60))
         else
-            updateESPDrawings()
             setUIState(espUI,"active",espTimer/ESP_DURATION,string.format("%.1fs",espTimer))
         end
     elseif espCooldown then
@@ -1181,13 +1313,40 @@ RunService.Heartbeat:Connect(function(dt)
         end
     end
 
+    -- REWARD: track idle time when aimlock is NOT active
+    if not aimlockActive then
+        rewardIdleTime = rewardIdleTime + dt
+        if rewardIdleTime >= REWARD_THRESHOLD then
+            rewardIdleTime = rewardIdleTime - REWARD_THRESHOLD
+            rewardBonus = rewardBonus + REWARD_BONUS
+            notify("Reward","+"..REWARD_BONUS.."s aimlock bonus banked!",Color3.fromRGB(255,200,50))
+        end
+        rewardLabel.Text="⏳ Idle bonus: "..rewardBonus.."s banked ("..math.floor(rewardIdleTime).."/"..REWARD_THRESHOLD.."s)"
+    end
+
     -- AIMLOCK
     if aimlockActive then
-        if aimlockRMBHeld then
+        if aimlockRMBHeld and aimlockEnabledToggle.getState() then
             local tgt=getNearestTarget()
             if tgt then
-                local cur=Camera.CFrame
-                Camera.CFrame=cur:Lerp(CFrame.new(cur.Position,tgt.Position),AIMLOCK_SMOOTH)
+                if aimlockMode=="Camera" then
+                    -- Camera lerp mode
+                    local cur=Camera.CFrame
+                    Camera.CFrame=cur:Lerp(CFrame.new(cur.Position,tgt.Position),AIMLOCK_SMOOTH)
+                else
+                    -- Mouse move mode: move mouse toward target screen position
+                    local sp,onScreen=Camera:WorldToViewportPoint(tgt.Position)
+                    if onScreen then
+                        local vp=Camera.ViewportSize
+                        local center=vp/2
+                        local targetPos=Vector2.new(sp.X,sp.Y)
+                        local delta=targetPos-center
+                        -- clamp delta so it's smooth
+                        local maxMove=20
+                        if delta.Magnitude>maxMove then delta=delta.Unit*maxMove end
+                        mousemoverel(delta.X,delta.Y)
+                    end
+                end
             end
         end
         aimlockTimer=aimlockTimer-dt
@@ -1242,3 +1401,4 @@ LocalPlayer.CharacterAdded:Connect(function()
 end)
 
 notify("CheatGUI","Loaded! Use tabs to navigate.",Color3.fromRGB(0,200,140))
+print("Loaded Succsefully!")
