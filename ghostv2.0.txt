@@ -1,7 +1,3 @@
--- ================================================================
---  Ghost v2  —  Rayfield Edition
---  Put Rayfield module in game.ReplicatedStorage named "Rayfield"
--- ================================================================
 print("Initializing...")
 task.wait(2) -- small delay so it looks cleaner
 print("Waiting for key...")
