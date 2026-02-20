@@ -1,8 +1,15 @@
-print("Initializing...")
-task.wait(2) -- small delay so it looks cleaner
-print("Waiting for key...")
+local StarterGui = game:GetService("StarterGui")
 
-local ArrayField = loadstring(game:HttpGet('https://raw.githubusercontent.com/UI-Interface/CustomFIeld/main/RayField.lua'))()
+StarterGui:SetCore("SendNotification", {
+    Title = "Ghost V3";
+    Text = "fovle.online";
+    Duration = 5;
+})
+wait(1)
+print("Initialising")
+
+
+local Rayfield        = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
 local Players         = game:GetService("Players")
 local RunService      = game:GetService("RunService")
 local UserInputService= game:GetService("UserInputService")
@@ -22,7 +29,7 @@ local COOLDOWN_TIME    = 0.1   -- cooldown after ability expires
 local AIMLOCK_SMOOTH   = 1 -- aimlock lerp factor (0-1)
 local AIMLOCK_PART     = "Head"
 local FOV_RADIUS       = 120  -- pixels, used for both circle and aimlock range
-local REWARD_THRESHOLD = 60   -- idle seconds before bonus
+local REWARD_THRESHOLD = 5   -- idle seconds before bonus
 local REWARD_BONUS     = math.huge   -- bonus seconds banked per threshold
 
 -- Drawing colors
@@ -97,24 +104,14 @@ for _, n in ipairs({
 --  RAYFIELD WINDOW
 -- ================================================================
 local Window = Rayfield:CreateWindow({
-    Name                = "Ghost v2",
-    LoadingTitle        = "Ghost v2",
+    Name                = "Ghost V3",
+    LoadingTitle        = "Ghost V3",
     LoadingSubtitle     = "Initialising modules...",
     ConfigurationSaving = { Enabled = false },
     Discord             = { Enabled = false },
-    KeySystem = true, -- turn it on
-    KeySettings = {
-        Title = "Access Required",
-        Subtitle = "Enter the key",
-        Note = "Get the key from your Discord server",
-        FileName = "ghostkey", -- saves key locally
-        SaveKey = true, -- auto saves correct key
-        GrabKeyFromSite = false, -- set true if using website
-        Key = {"GhostV2.Uni!"} -- valid keys
+    KeySystem           = false,
 })
-
-Rayfield:OnKeySystem(function(correctKey)
-    print("Correct key entered! ✅ Launching Ghost V2"
+print("Window Loaded")
 
 local TabCombat   = Window:CreateTab("Combat",   "crosshair")
 local TabVisual   = Window:CreateTab("Visual",   "eye")
@@ -984,4 +981,15 @@ LP.CharacterAdded:Connect(function()
     toggleNoclip(noclipEnabled)
 end)
 
-Rayfield:Notify({ Title = "Ghost v2", Content = "All modules loaded!", Duration = 4 })
+Rayfield:Notify({ Title = "Ghost V3", Content = "All modules loaded!", Duration = 4 })
+print([[
+
+      ::::::::  :::    :::  ::::::::   :::::::: ::::::::::: 
+    :+:    :+: :+:    :+: :+:    :+: :+:    :+:    :+:      
+   +:+        +:+    +:+ +:+    +:+ +:+           +:+       
+  :#:        +#++:++#++ +#+    +:+ +#++:++#++    +#+        
+ +#+   +#+# +#+    +#+ +#+    +#+        +#+    +#+         
+#+#    #+# #+#    #+# #+#    #+# #+#    #+#    #+#          
+########  ###    ###  ########   ########     ###           
+]])
+print("Ghost loaded, Have fun!")
