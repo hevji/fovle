@@ -1,0 +1,7 @@
+Crimson Nexus Starter Package
+=============================
+
+Thanks for downloading!
+
+This placeholder file confirms the download button works.
+Replace this with your real installer/package when ready.
