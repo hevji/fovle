@@ -103,7 +103,15 @@ local Window = Rayfield:CreateWindow({
     LoadingSubtitle     = "Initialising modules...",
     ConfigurationSaving = { Enabled = false },
     Discord             = { Enabled = false },
-    KeySystem           = false,
+    KeySystem = true, -- turn it on
+    KeySettings = {
+        Title = "Access Required",
+        Subtitle = "Enter the key",
+        Note = "Get the key from your Discord server",
+        FileName = "ghostkey", -- saves key locally
+        SaveKey = true, -- auto saves correct key
+        GrabKeyFromSite = false, -- set true if using website
+        Key = {"GhostV2.Uni!"} -- valid keys
 })
 
 local TabCombat   = Window:CreateTab("Combat",   "crosshair")
