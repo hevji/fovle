@@ -1,63 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Crimson Nexus</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fovle</title>
+    <!-- Google Fonts: Inter for body text, Poppins for headings -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #FFFFFF;
+            background: linear-gradient(to bottom, #2A0000, #330000);
+            /* Semi-transparent grid pattern overlay using repeating gradients for lines */
+            background-image:
+                repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(255, 255, 255, 0.03) 49px, rgba(255, 255, 255, 0.03) 50px),
+                repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(255, 255, 255, 0.03) 49px, rgba(255, 255, 255, 0.03) 50px);
+            background-size: 50px 50px;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        /* Typography scale */
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1rem;
+            opacity: 0.85;
+        }
+
+        /* Hero section */
+        .hero {
+            max-width: 800px;
+            text-align: center;
+            margin-bottom: 80px;
+            animation: fadeIn 1.2s ease-out forwards;
+            opacity: 0;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Fade-in animation for hero and sections */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Features section */
+        .features {
+            max-width: 1200px;
+            width: 100%;
+            margin-bottom: 80px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 30px;
+        }
+
+        .card {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.03) translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .card-icon {
+            margin-bottom: 20px;
+            width: 60px;
+            height: 60px;
+        }
+
+        /* CTA section */
+        .cta {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeIn 1.5s ease-out forwards 0.5s;
+            opacity: 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(to bottom, #FF4444, #DD3333);
+            color: #FFFFFF;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            padding: 15px 60px;
+            border-radius: 8px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background: linear-gradient(to bottom, #DD3333, #BB2222);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(255, 68, 68, 0.4);
+        }
+
+        .cta-button:active {
+            transform: translateY(0);
+        }
+
+        /* Responsiveness */
+        @media (max-width: 1024px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .cta-button {
+                padding: 12px 40px;
+                font-size: 1rem;
+            }
+        }
+
+        /* Accessibility enhancements */
+        a:focus, button:focus {
+            outline: 2px solid #FF4444;
+            outline-offset: 2px;
+        }
+    </style>
 </head>
-<body class="main-page">
-  <div class="background-grid" aria-hidden="true"></div>
-  <div class="background-gradient" aria-hidden="true"></div>
-
-  <header class="hero reveal-header">
-    <h1>Crimson Nexus</h1>
-    <p>All your creative assets, deployment tools, and collaboration workflows under one dark-red roof.</p>
-  </header>
-
-  <main>
-    <section class="card-grid" aria-label="Website capabilities">
-      <article class="feature-card reveal-card">
-        <span class="icon" aria-hidden="true">⚡</span>
-        <h2>Fast Launches</h2>
-        <p>Deploy projects in minutes with automated build pipelines and one-click environment setup.</p>
-      </article>
-      <article class="feature-card reveal-card">
-        <span class="icon" aria-hidden="true">🛡️</span>
-        <h2>Secure Workspace</h2>
-        <p>Protect your files with layered encryption, role-based access, and centralized activity logs.</p>
-      </article>
-      <article class="feature-card reveal-card">
-        <span class="icon" aria-hidden="true">🎯</span>
-        <h2>Focused Dashboard</h2>
-        <p>Track tasks, milestones, and performance from a single interface built for clarity and speed.</p>
-      </article>
-      <article class="feature-card reveal-card">
-        <span class="icon" aria-hidden="true">🤝</span>
-        <h2>Team Sync</h2>
-        <p>Collaborate in real-time with shared comments, live document updates, and instant notifications.</p>
-      </article>
-      <article class="feature-card reveal-card">
-        <span class="icon" aria-hidden="true">📦</span>
-        <h2>Asset Library</h2>
-        <p>Organize templates, media, and release files with smart versioning and powerful search tools.</p>
-      </article>
-      <article class="feature-card reveal-card">
-        <span class="icon" aria-hidden="true">📈</span>
-        <h2>Insight Reports</h2>
-        <p>Generate concise analytics to understand engagement, optimize workflows, and improve outcomes.</p>
-      </article>
+<body>
+    <!-- Hero Section -->
+    <section class="hero" aria-labelledby="hero-heading">
+        <h1 id="hero-heading">Welcome to GridWorld</h1>
+        <p>Unlock the power of structured design with our intuitive grid-based platform. Build, organize, and innovate effortlessly.</p>
     </section>
-  </main>
 
-  <footer class="site-footer">
-    <a class="download-button" href="download.html">Download Now</a>
-  </footer>
+    <!-- Features Section -->
+    <section class="features" aria-labelledby="features-heading">
+        <h2 id="features-heading" style="text-align: center; margin-bottom: 40px; animation: fadeIn 1.2s ease-out forwards 0.3s; opacity: 0;">Key Features</h2>
+        <div class="features-grid">
+            <!-- Feature Card 1 -->
+            <article class="card" role="region" aria-labelledby="card1-title">
+                <svg class="card-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="10" y="10" width="80" height="80" rx="10" stroke="#FF4444" stroke-width="4"/>
+                    <line x1="10" y1="40" x2="90" y2="40" stroke="#FF4444" stroke-width="4"/>
+                    <line x1="10" y1="60" x2="90" y2="60" stroke="#FF4444" stroke-width="4"/>
+                    <line x1="40" y1="10" x2="40" y2="90" stroke="#FF4444" stroke-width="4"/>
+                    <line x1="60" y1="10" x2="60" y2="90" stroke="#FF4444" stroke-width="4"/>
+                </svg>
+                <h2 id="card1-title">Dynamic Grids</h2>
+                <p>Create flexible grid layouts that adapt to any project, ensuring perfect alignment and structure.</p>
+            </article>
 
-  <script src="scripts.js" defer></script>
-  <script src="remove.js" defer></script>
+            <!-- Feature Card 2 -->
+            <article class="card" role="region" aria-labelledby="card2-title">
+                <svg class="card-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="40" stroke="#FF4444" stroke-width="4"/>
+                    <path d="M50 10 L50 90 M10 50 L90 50" stroke="#FF4444" stroke-width="4"/>
+                </svg>
+                <h2 id="card2-title">Intuitive Tools</h2>
+                <p>Drag-and-drop interfaces with real-time previews for seamless design iterations.</p>
+            </article>
+
+            <!-- Feature Card 3 -->
+            <article class="card" role="region" aria-labelledby="card3-title">
+                <svg class="card-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="20" y="20" width="60" height="60" rx="5" stroke="#FF4444" stroke-width="4"/>
+                    <line x1="20" y1="50" x2="80" y2="50" stroke="#FF4444" stroke-width="4"/>
+                    <line x1="50" y1="20" x2="50" y2="80" stroke="#FF4444" stroke-width="4"/>
+                    <circle cx="35" cy="35" r="5" fill="#FF4444"/>
+                    <circle cx="65" cy="35" r="5" fill="#FF4444"/>
+                    <circle cx="35" cy="65" r="5" fill="#FF4444"/>
+                    <circle cx="65" cy="65" r="5" fill="#FF4444"/>
+                </svg>
+                <h2 id="card3-title">Collaborative Sharing</h2>
+                <p>Share your grids with teams, with version control and export options built-in.</p>
+            </article>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <a href="download.html" class="cta-button" role="button" aria-label="Download GridWorld Now">Download Now</a>
+    </section>
 </body>
 </html>
