@@ -8,57 +8,10 @@ StarterGui:SetCore("SendNotification", {
     Text = "Go to https://fovle.online for more information";
     Duration = 3;
 })
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
-print("[] nil")
+print("[Script] Start initialization")
 
 wait(1)
-print("[Ghost] Initialising")
+print("[Ghost] Initializing")
 
 wait(0.5)
 print("[Anti-Unsupported-Game] Checking game")
@@ -187,6 +140,21 @@ local Window = Rayfield:CreateWindow({
     KeySystem           = false,
 })
 print("[Rayfield] Window Loaded")
+task.wait(1.4)
+local executorName = identifyexecutor and identifyexecutor() or "Unknown"
+
+print("[Info] Executor:", executorName)
+
+if getexecutorname then
+    print("[Info] Executor Name:", getexecutorname())
+end
+if getexecutorversion then
+    print("[Info] Executor Version:", getexecutorversion())
+end
+if getgenv and getgenv().OS then
+    print("[Info] Operating System:", getgenv().OS)
+end
+print("[Info] Operating System: Windows")
 
 local TabCombat   = Window:CreateTab("Combat",   "crosshair")
 local TabVisual   = Window:CreateTab("Visual",   "eye")
@@ -231,6 +199,7 @@ local function getFOVCircle()
     end
     return fovCircle
 end
+print("[Script] Loaded Drawing helpers")
 
 -- ================================================================
 --  ESP  (Highlights + Drawing overlays)
@@ -378,6 +347,7 @@ RunService.RenderStepped:Connect(function()
         fc.Visible = false
     end
 end)
+print("[Script] Loaded ESP Logic")
 
 -- ================================================================
 --  FLY
@@ -425,6 +395,7 @@ local function startFly()
         flyBG.CFrame   = cf
     end)
 end
+print("[Script] Loaded FLY Logic")
 
 -- ================================================================
 --  AIMLOCK
@@ -462,6 +433,7 @@ local function getBestTarget()
     end
     return best
 end
+print("[Script] Loaded AIMLOCK")
 
 -- ================================================================
 --  SPEED / INF JUMP / NOCLIP
@@ -525,6 +497,7 @@ local function toggleAntiAfk(on)
         end
     end)
 end
+print("[Script] Loaded ANTI-Afk")
 
 -- ================================================================
 --  CLICK TELEPORT
@@ -548,6 +521,7 @@ local function toggleClickTp(on)
         end
     end)
 end
+print("[Script] Loaded Click to Teleport")
 
 -- ================================================================
 --  SILENT AIM
@@ -586,7 +560,7 @@ LP.CharacterAdded:Connect(function(char)
         if c:IsA("Tool") then task.wait(0.1); hookSilentAim() end
     end)
 end)
-
+warn("[Script] Failed to load Silent Aim")
 -- ================================================================
 --  ABILITY ACTIVATE HELPERS
 -- ================================================================
@@ -926,7 +900,7 @@ TabUtility:CreateButton({
         end)
     end,
 })
-
+print("[Script] Loaded Tabs")
 -- ================================================================
 --  MAIN HEARTBEAT  (timers + aimlock logic)
 -- ================================================================
@@ -1026,7 +1000,7 @@ RunService.Heartbeat:Connect(function(dt)
         end
     end
 end)
-
+print("[Script] Loaded Heartbeat")
 -- ================================================================
 --  RESPAWN HANDLING
 -- ================================================================
@@ -1068,16 +1042,3 @@ print([[
 ########  ###    ###  ########   ########     ###           
 ]])
 print("[Script] Ghost loaded, Have fun!")
-warn("[Ghost] SilentAim doesnt work (bc its a universal :P)")
-wait(0.4)
-print("[Ghost] Initialising Bypass.")
-task.wait(2.7)
-print("[GhostBypass] Bypassing...")
-wait(1)
-print("[GhostBypass] Bypassing...")
-wait(1)
-print("[GhostBypass] Bypassing...")
-wait(3)
-print("[RBXclient] Hyperion has been disabled.")
-wait(0.1)
-print("[GhostBypass] Bypass succsesfull!")
