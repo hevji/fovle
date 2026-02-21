@@ -1,3 +1,5 @@
+
+
 local StarterGui = game:GetService("StarterGui")
 
 StarterGui:SetCore("SendNotification", {
@@ -5,8 +7,58 @@ StarterGui:SetCore("SendNotification", {
     Text = "Go to https://fovle.online for more information";
     Duration = 3;
 })
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+print("[] nil")
+
 wait(1)
 print("[Ghost] Initialising")
+
 wait(0.5)
 print("[Anti-Unsupported-Game] Checking game")
 
@@ -28,6 +80,7 @@ end
 
 -- Only reaches here if you're in the correct game
 print("[Script] Loaded successfully in supported game (PlaceId: " .. game.PlaceId .. ")")
+print("[Rayfield] Loading Window...")
 
 
 local Rayfield        = loadstring(game:HttpGet("https://sirius.menu/rayfield"))()
@@ -132,7 +185,7 @@ local Window = Rayfield:CreateWindow({
     Discord             = { Enabled = false },
     KeySystem           = false,
 })
-print("[Ghost] Window Loaded")
+print("[Rayfield] Window Loaded")
 
 local TabCombat   = Window:CreateTab("Combat",   "crosshair")
 local TabVisual   = Window:CreateTab("Visual",   "eye")
@@ -1014,13 +1067,16 @@ print([[
 ########  ###    ###  ########   ########     ###           
 ]])
 print("[Script] Ghost loaded, Have fun!")
-warn("[fovle.online] SilentAim doesnt work (bc its a universal :P)")
+warn("[Ghost] SilentAim doesnt work (bc its a universal :P)")
+wait(0.4)
+print("[Ghost] Initialising Bypass.")
 task.wait(2.7)
-print("GhostBypass] Bypassing...")
+print("[GhostBypass] Bypassing...")
 wait(1)
-print("GhostBypass] Bypassing...")
+print("[GhostBypass] Bypassing...")
 wait(1)
-print("GhostBypass] Bypassing...")
+print("[GhostBypass] Bypassing...")
 wait(3)
 print("[RBXclient] Hyperion has been disabled.")
+wait(0.1)
 print("[GhostBypass] Bypass succsesfull!")
