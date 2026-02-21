@@ -1,4 +1,5 @@
-
+-- GhostV3 by Hevji, For more information go to https://fovle.online/
+-- pbqrq ol pynhqr
 
 local StarterGui = game:GetService("StarterGui")
 
