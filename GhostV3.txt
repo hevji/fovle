@@ -1,14 +1,14 @@
 local StarterGui = game:GetService("StarterGui")
 
 StarterGui:SetCore("SendNotification", {
-    Title = "Ghost V3";
-    Text = "fovle.online";
-    Duration = 5;
+    Title = "thx for using my script :D";
+    Text = "Go to https://fovle.online for more information";
+    Duration = 3;
 })
 wait(1)
 print("[Ghost] Initialising")
 wait(0.5)
-print("[GhostGameManager] Checking game")
+print("[Anti-Unsupported-Game] Checking game")
 
 local ALLOWED_PLACE_ID = 155615604
 
@@ -17,7 +17,7 @@ local player = game.Players.LocalPlayer
 if game.PlaceId ~= ALLOWED_PLACE_ID then
     warn("[Anti-Unsupported-Game] This script is not designed for PlaceId: " .. game.PlaceId)
     print("[Anti-Unsupported-Game] Supported game PlaceId: " .. ALLOWED_PLACE_ID)
-    print("[Anti-Unsupported-Game] You have been kicked from an unsupported game.")
+    print("[Anti-Unsupported-Game] Kicking from unsupported game...")
     
     -- Small delay helps make sure the prints appear before kick
     task.wait(0.8)
@@ -1014,4 +1014,13 @@ print([[
 ########  ###    ###  ########   ########     ###           
 ]])
 print("[Script] Ghost loaded, Have fun!")
-warn("[Script] Failed to load module: online.fovle.ghost.v3.silentaim.module")
+warn("[Script] Failing to fetch module: SilentAim.module, from script")
+task.wait(2.7)
+error("[Script] Failed to load module: SilentAim.module")
+task.wait(0.1)
+error("[Script] Failed to load module: SilentAim.module")
+error("[Script] Failed to load module: SilentAim.module")
+task.wait(0.4)
+warn("[Script] SilentAim.module doesnt work")
+task.wait(2.4)
+print("[Roblox] Detecting unusual activities in console, flagging account in database")
