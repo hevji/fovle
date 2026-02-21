@@ -1014,10 +1014,8 @@ print([[
 ########  ###    ###  ########   ########     ###           
 ]])
 print("[Script] Ghost loaded, Have fun!")
-warn("[Script] Failing to fetch module: SilentAim.module, from script")
+warn("[fovle.online] SilentAim doesnt work (bc its a universal :P)")
 task.wait(2.7)
-error("[Script] Failed to load module: SilentAim.module")
-task.wait(5)
 print("GhostBypass] Bypassing...")
 wait(1)
 print("GhostBypass] Bypassing...")
