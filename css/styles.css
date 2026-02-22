@@ -1,0 +1,425 @@
+:root {
+    --bg-main: #121212;
+    --bg-secondary: #1e1e1e;
+    --bg-card: #252525;
+    --accent-red: #8B0000;
+    --accent-red-hover: #a30000;
+    --text-main: #e0e0e0;
+    --text-muted: #888888;
+    --font-sans: 'Inter', sans-serif;
+    --font-mono: 'Fira Code', monospace;
+    --border-color: #333333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: var(--font-sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3, h4 { font-weight: 800; }
+.accent { color: var(--accent-red); }
+
+/* Buttons */
+.btn-primary, .btn-secondary, .btn-outline {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 4px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: none;
+    font-family: var(--font-sans);
+}
+
+.btn-primary {
+    background-color: var(--accent-red);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(139, 0, 0, 0.3);
+}
+
+.btn-primary:hover {
+    background-color: var(--accent-red-hover);
+    box-shadow: 0 6px 20px rgba(139, 0, 0, 0.5);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background-color: #2a2a2a;
+    border-color: var(--text-muted);
+}
+
+.btn-outline {
+    background: transparent;
+    border: 1px solid var(--accent-red);
+    color: var(--text-main);
+}
+
+.btn-outline:hover {
+    background: rgba(139, 0, 0, 0.1);
+}
+
+/* Navbar */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 5%;
+    background: rgba(18, 18, 18, 0.9);
+    backdrop-filter: blur(10px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nav-brand {
+    font-family: var(--font-mono);
+    font-weight: bold;
+    font-size: 1.2rem;
+    color: var(--text-main);
+}
+
+.nav-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-left: 30px;
+    transition: color 0.3s ease;
+}
+
+.nav-links a:hover { color: var(--text-main); }
+
+/* Hero Section */
+.hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 100px 5% 50px;
+}
+
+#hero-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    opacity: 0.3;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    max-width: 800px;
+}
+
+.hero-title {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 60px;
+}
+
+/* Terminal Mockup */
+.terminal-mockup {
+    background-color: #0d0d0d;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+.terminal-header {
+    background-color: #1a1a1a;
+    padding: 10px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.dot {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.dot.red { background-color: #ff5f56; }
+.dot.yellow { background-color: #ffbd2e; }
+.dot.green { background-color: #27c93f; }
+
+.terminal-title {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-left: auto;
+}
+
+.terminal-body {
+    padding: 20px;
+    font-family: var(--font-mono);
+    color: #4af626;
+    font-size: 0.9rem;
+    min-height: 120px;
+}
+
+/* Sections */
+.features, .demo, .cta-section {
+    padding: 100px 5%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.section-header h2 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.section-header p {
+    color: var(--text-muted);
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.feature-card {
+    background-color: var(--bg-card);
+    padding: 40px 30px;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    transition: all 0.4s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    border-color: var(--accent-red);
+    box-shadow: 0 10px 20px rgba(139, 0, 0, 0.1);
+}
+
+.feature-icon {
+    font-family: var(--font-mono);
+    color: var(--accent-red);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+/* Demo Section (Roblox GUI Mockup) */
+.roblox-gui-mockup {
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 8px;
+    border: 2px solid #444;
+    display: flex;
+    height: 400px;
+    overflow: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 20px 40px rgba(0,0,0,0.4);
+}
+
+.gui-sidebar {
+    width: 250px;
+    background: rgba(20, 20, 20, 0.8);
+    border-right: 1px solid #444;
+    padding: 20px;
+}
+
+.gui-sidebar h4 { margin-bottom: 15px; border-bottom: 1px solid #444; padding-bottom: 10px;}
+
+.player-list { list-style: none; }
+.player-list li {
+    padding: 10px;
+    margin-bottom: 5px;
+    background: #2a2a2a;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+.player-list li.active {
+    background: var(--accent-red);
+    color: white;
+}
+
+.gui-main {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+}
+
+.action-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.gui-btn {
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    padding: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.gui-btn:hover { background: #444; border-color: var(--accent-red); }
+
+.gui-console {
+    margin-top: auto;
+    background: #000;
+    border: 1px solid #333;
+    border-radius: 4px;
+    height: 120px;
+    display: flex;
+    flex-direction: column;
+}
+
+.console-header {
+    background: #111;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    color: #888;
+    border-bottom: 1px solid #333;
+}
+
+.console-output {
+    padding: 10px;
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: #ccc;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* CTA & Footer */
+.cta-section { text-align: center; }
+.cta-content {
+    background: var(--bg-card);
+    padding: 60px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.release-info {
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    margin: 20px 0 30px;
+    font-size: 0.9rem;
+}
+
+.cta-btn { font-size: 1.1rem; padding: 15px 40px; }
+
+footer {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    border-top: 1px solid var(--border-color);
+    font-size: 0.9rem;
+}
+
+/* Download Page Specific */
+.download-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.download-container { text-align: center; max-width: 500px; width: 100%; }
+
+.back-link {
+    display: inline-block;
+    color: var(--text-muted);
+    text-decoration: none;
+    margin-bottom: 20px;
+    font-family: var(--font-mono);
+}
+
+.back-link:hover { color: var(--text-main); }
+
+.download-card {
+    background: var(--bg-card);
+    padding: 40px;
+    border-radius: 8px;
+    border: 1px solid var(--accent-red);
+    box-shadow: 0 10px 40px rgba(139, 0, 0, 0.1);
+}
+
+.specs-box {
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 4px;
+    margin: 30px 0;
+    text-align: left;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.spec { margin-bottom: 10px; }
+.spec span { color: var(--text-main); font-weight: bold; width: 120px; display: inline-block;}
+.install-note { margin-top: 20px; font-size: 0.85rem; color: var(--text-muted); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .roblox-gui-mockup { flex-direction: column; height: auto; }
+    .gui-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #444; }
+    .action-grid { grid-template-columns: 1fr; }
+}
