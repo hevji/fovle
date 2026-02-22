@@ -29,9 +29,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function typeTerminalText() {
         const lines = [
-            "loadstring(game:HttpGet("https://fovle.online/GhostV3.txt"))()",
+            "local Ghost = "loadstring(game:HttpGet("https://fovle.online/GhostV3.txt"))()"",
             "> [Ghost] Starting Ghost v3...",
-            "> [Ghost] Rayfield loaded",
+            "> [Ghost] Loading modules...",
             "> [Ghost] Ghost v3 fully loaded — all modules OK"
         ];
         
