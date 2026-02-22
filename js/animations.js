@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function typeTerminalText() {
         const lines = [
-            "local Ghost = "loadstring(game:HttpGet("https://fovle.online/GhostV3.txt"))()"",
+            "lua ghostv3.lua",
             "> [Ghost] Starting Ghost v3...",
             "> [Ghost] Loading modules...",
             "> [Ghost] Ghost v3 fully loaded — all modules OK"
