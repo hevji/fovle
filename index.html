@@ -3,225 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fovle</title>
-    <!-- Google Fonts: Inter for body text, Poppins for headings -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
-    <style>
-        /* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            color: #FFFFFF;
-            background: linear-gradient(to bottom, #2A0000, #330000);
-            /* Semi-transparent grid pattern overlay using repeating gradients for lines */
-            background-image:
-                repeating-linear-gradient(0deg, transparent, transparent 49px, rgba(255, 255, 255, 0.03) 49px, rgba(255, 255, 255, 0.03) 50px),
-                repeating-linear-gradient(90deg, transparent, transparent 49px, rgba(255, 255, 255, 0.03) 49px, rgba(255, 255, 255, 0.03) 50px);
-            background-size: 50px 50px;
-            line-height: 1.6;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 20px;
-        }
-
-        /* Typography scale */
-        h1 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 3rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        h2 {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        p {
-            font-size: 1rem;
-            opacity: 0.85;
-        }
-
-        /* Hero section */
-        .hero {
-            max-width: 800px;
-            text-align: center;
-            margin-bottom: 80px;
-            animation: fadeIn 1.2s ease-out forwards;
-            opacity: 0;
-        }
-
-        .hero p {
-            font-size: 1.2rem;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        /* Fade-in animation for hero and sections */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Features section */
-        .features {
-            max-width: 1200px;
-            width: 100%;
-            margin-bottom: 80px;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 30px;
-        }
-
-        .card {
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-
-        .card:hover {
-            transform: scale(1.03) translateY(-5px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            background: rgba(0, 0, 0, 0.7);
-        }
-
-        .card-icon {
-            margin-bottom: 20px;
-            width: 60px;
-            height: 60px;
-        }
-
-        /* CTA section */
-        .cta {
-            text-align: center;
-            margin-bottom: 40px;
-            animation: fadeIn 1.5s ease-out forwards 0.5s;
-            opacity: 0;
-        }
-
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(to bottom, #FF4444, #DD3333);
-            color: #FFFFFF;
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.2rem;
-            font-weight: 600;
-            padding: 15px 60px;
-            border-radius: 8px;
-            text-decoration: none;
-            box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
-            transition: background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .cta-button:hover {
-            background: linear-gradient(to bottom, #DD3333, #BB2222);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(255, 68, 68, 0.4);
-        }
-
-        .cta-button:active {
-            transform: translateY(0);
-        }
-
-        /* Responsiveness */
-        @media (max-width: 1024px) {
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 768px) {
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .cta-button {
-                padding: 12px 40px;
-                font-size: 1rem;
-            }
-        }
-
-        /* Accessibility enhancements */
-        a:focus, button:focus {
-            outline: 2px solid #FF4444;
-            outline-offset: 2px;
-        }
-    </style>
+    <title>Universal Admin Panel | Roblox Studio Framework</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-    <!-- Hero Section -->
-    <section class="hero" aria-labelledby="hero-heading">
-        <h1 id="hero-heading">Welcome to GridWorld</h1>
-        <p>Unlock the power of structured design with our intuitive grid-based platform. Build, organize, and innovate effortlessly.</p>
-    </section>
+    <nav class="navbar">
+        <div class="nav-brand">UAP_FRAMEWORK</div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#demo">Demo</a>
+            <a href="download.html" class="btn-outline">Download</a>
+        </div>
+    </nav>
 
-    <!-- Features Section -->
-    <section class="features" aria-labelledby="features-heading">
-        <h2 id="features-heading" style="text-align: center; margin-bottom: 40px; animation: fadeIn 1.2s ease-out forwards 0.3s; opacity: 0;">Key Features</h2>
+    <header class="hero" id="hero">
+        <canvas id="hero-canvas"></canvas>
+        <div class="hero-content">
+            <h1 class="hero-title">Universal Admin Panel</h1>
+            <p class="hero-subtitle">Advanced in-game moderation & control framework for Roblox Studio developers.</p>
+            
+            <div class="hero-actions">
+                <a href="download.html" class="btn-primary">Download Script</a>
+                <a href="#features" class="btn-secondary">View Features</a>
+            </div>
+
+            <div class="terminal-mockup">
+                <div class="terminal-header">
+                    <span class="dot red"></span>
+                    <span class="dot yellow"></span>
+                    <span class="dot green"></span>
+                    <span class="terminal-title">uap_init.lua</span>
+                </div>
+                <div class="terminal-body" id="hero-terminal-text">
+                    </div>
+            </div>
+        </div>
+    </header>
+
+    <section class="features" id="features">
+        <div class="section-header">
+            <h2>System Capabilities</h2>
+            <p>Modular infrastructure built for scalability and security.</p>
+        </div>
+        
         <div class="features-grid">
-            <!-- Feature Card 1 -->
-            <article class="card" role="region" aria-labelledby="card1-title">
-                <svg class="card-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="10" y="10" width="80" height="80" rx="10" stroke="#FF4444" stroke-width="4"/>
-                    <line x1="10" y1="40" x2="90" y2="40" stroke="#FF4444" stroke-width="4"/>
-                    <line x1="10" y1="60" x2="90" y2="60" stroke="#FF4444" stroke-width="4"/>
-                    <line x1="40" y1="10" x2="40" y2="90" stroke="#FF4444" stroke-width="4"/>
-                    <line x1="60" y1="10" x2="60" y2="90" stroke="#FF4444" stroke-width="4"/>
-                </svg>
-                <h2 id="card1-title">Dynamic Grids</h2>
-                <p>Create flexible grid layouts that adapt to any project, ensuring perfect alignment and structure.</p>
-            </article>
-
-            <!-- Feature Card 2 -->
-            <article class="card" role="region" aria-labelledby="card2-title">
-                <svg class="card-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="50" cy="50" r="40" stroke="#FF4444" stroke-width="4"/>
-                    <path d="M50 10 L50 90 M10 50 L90 50" stroke="#FF4444" stroke-width="4"/>
-                </svg>
-                <h2 id="card2-title">Intuitive Tools</h2>
-                <p>Drag-and-drop interfaces with real-time previews for seamless design iterations.</p>
-            </article>
-
-            <!-- Feature Card 3 -->
-            <article class="card" role="region" aria-labelledby="card3-title">
-                <svg class="card-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="20" y="20" width="60" height="60" rx="5" stroke="#FF4444" stroke-width="4"/>
-                    <line x1="20" y1="50" x2="80" y2="50" stroke="#FF4444" stroke-width="4"/>
-                    <line x1="50" y1="20" x2="50" y2="80" stroke="#FF4444" stroke-width="4"/>
-                    <circle cx="35" cy="35" r="5" fill="#FF4444"/>
-                    <circle cx="65" cy="35" r="5" fill="#FF4444"/>
-                    <circle cx="35" cy="65" r="5" fill="#FF4444"/>
-                    <circle cx="65" cy="65" r="5" fill="#FF4444"/>
-                </svg>
-                <h2 id="card3-title">Collaborative Sharing</h2>
-                <p>Share your grids with teams, with version control and export options built-in.</p>
-            </article>
+            <div class="feature-card">
+                <div class="feature-icon">[!]</div>
+                <h3>Player Moderation</h3>
+                <p>Execute Kick, Ban, and TempBan commands with integrated data-store saving and cross-server syncing.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">[@]</div>
+                <h3>Rank Framework</h3>
+                <p>Hierarchical permission system. Assign roles (Moderator, Admin, Owner) with strict command-level access control.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">[#]</div>
+                <h3>Server Control</h3>
+                <p>Manage server state with Shutdown, Lock, and Announcement commands to maintain environment integrity.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">[>]</div>
+                <h3>Action Logging</h3>
+                <p>Comprehensive tracking of all executed commands, stored natively or exportable via Webhooks.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">[+]</div>
+                <h3>Custom Commands</h3>
+                <p>Easily register proprietary commands using the standardized UAP API integration module.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">[*]</div>
+                <h3>Remote Security</h3>
+                <p>Encrypted RemoteEvent validation layer to prevent unauthorized client-side execution and exploitation.</p>
+            </div>
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta">
-        <a href="download.html" class="cta-button" role="button" aria-label="Download GridWorld Now">Download Now</a>
+    <section class="demo" id="demo">
+        <div class="section-header">
+            <h2>Interface Simulation</h2>
+            <p>Preview the in-game GUI structure and console output.</p>
+        </div>
+
+        <div class="demo-container">
+            <div class="roblox-gui-mockup">
+                <div class="gui-sidebar">
+                    <h4>Players</h4>
+                    <ul class="player-list">
+                        <li class="active">Player_01</li>
+                        <li>Dev_Build</li>
+                        <li>Guest_992</li>
+                    </ul>
+                </div>
+                <div class="gui-main">
+                    <h4>Target: <span class="accent">Player_01</span></h4>
+                    <div class="action-grid">
+                        <button class="gui-btn" data-action="Kick">Kick</button>
+                        <button class="gui-btn" data-action="Ban">Ban</button>
+                        <button class="gui-btn" data-action="Teleport">Teleport</button>
+                        <button class="gui-btn" data-action="Set Rank">Set Rank</button>
+                    </div>
+                    <div class="gui-console">
+                        <div class="console-header">Output Log</div>
+                        <div class="console-output" id="demo-console">
+                            <span>> UAP Module Loaded successfully.</span>
+                            <span>> Awaiting command...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
+
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2>Deploy the Framework</h2>
+            <p>Designed strictly for native Roblox Studio Integration.</p>
+            <div class="release-info">
+                <span>Version: <strong>v2.4.1</strong></span> | 
+                <span>Updated: <strong>Oct 2023</strong></span>
+            </div>
+            <a href="download.html" class="btn-primary cta-btn">Initialize Download</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2023 UAP Framework. For developer use only.</p>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/demo.js"></script>
 </body>
 </html>
