@@ -9,17 +9,25 @@
 </head>
 <body class="download-page">
     <div class="download-container">
-        <a href="index.html" class="back-link">← Return to Documentation</a>
-        
-        <div class="download-card">
+    <a href="index.html" class="back-link">← RETURN_TO_ROOT</a>
+    
+    <div class="download-card">
+        <div class="filename-box">
             <h1 class="hero-title">UAP_v2.4.1.rbxm</h1>
-            <p class="hero-subtitle">Roblox Studio Model File</p>
-            
-            <div class="specs-box">
-                <div class="spec"><span>Compatibility:</span> Roblox Studio</div>
-                <div class="spec"><span>File Size:</span> 42 KB</div>
-                <div class="spec"><span>Checksum:</span> a1b2c3d4...</div>
-            </div>
+        </div>
+        
+        <p class="hero-subtitle">Roblox Studio Model File</p>
+        
+        <div class="specs-box">
+            <div class="spec"><span>Target Env:</span> Roblox Studio</div>
+            <div class="spec"><span>Payload Size:</span> 42 KB</div>
+            <div class="spec"><span>Checksum:</span> 0x8F2A9B...</div>
+        </div>
+
+        <button class="btn-primary download-trigger" onclick="alert('Download initialized.')">Execute Download</button>
+        <p class="install-note">> Insert .rbxm payload into ServerScriptService to deploy.</p>
+    </div>
+</div>
 
             <button class="btn-primary download-trigger" onclick="alert('Download simulated.')">Download .rbxm</button>
             <p class="install-note">Drag and drop the .rbxm file into ServerScriptService to initialize.</p>
