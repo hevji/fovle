@@ -158,17 +158,17 @@ h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.5px; }
 .hero-actions { display: flex; gap: 20px; justify-content: center; margin-bottom: 60px; }
 
 /* Hacker Terminal Mockup */
+Add / update these rules in your styles.css:
+
 .terminal-mockup {
-    background-color: #030000;
-    border-radius: 8px;
-    border: 1px solid var(--accent-dark);
-    text-align: left;
     max-width: 800px;
     width: 100%;
+    min-height: 180px; /* ensures text has room */
     margin: 0 auto 30px;
+    padding-bottom: 10px;
     box-shadow: 0 15px 40px rgba(0,0,0,0.8), var(--glow-spread);
-    overflow: hidden;
 }
+
 
 .terminal-header {
     background-color: #0a0000;
@@ -191,33 +191,32 @@ h1, h2, h3, h4 { font-weight: 800; letter-spacing: -0.5px; }
 }
 
 .terminal-body {
-    padding: 25px;
-    font-family: var(--font-mono);
-    color: var(--accent-glow);
-    font-size: 0.95rem;
     min-height: 140px;
-    text-shadow: 0 0 5px rgba(255, 0, 0, 0.4);
+    font-size: 0.95rem;
+    padding: 25px;
     white-space: pre-wrap;
 }
 
 /* Code Box */
 .code-box {
-    position: relative;
-    background: #030000;
+    max-width: 800px;
+    width: 100%;
+    margin: 20px auto 60px;
+    padding: 20px;
     border: 1px solid var(--accent-dark);
     border-radius: 8px;
-    padding: 20px;
-    margin: 20px auto 60px;
-    max-width: 800px;
     box-shadow: var(--glow-spread);
-    overflow-x: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #030000;
 }
 
 .code-box pre {
     margin: 0;
     font-family: var(--font-mono);
-    font-size: 0.95rem;
     color: var(--accent-glow);
+    font-size: 0.95rem;
     white-space: pre-wrap;
 }
 
