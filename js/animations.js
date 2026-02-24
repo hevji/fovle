@@ -26,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
         ease: "power3.out",
         onComplete: typeTerminalText
     }, "-=0.2");
+    .from(".code-box", {
+    y: 30,
+    opacity: 0,
+    duration: 0.6,
+    ease: "power3.out"
+}, "-=0.3");
 
     function typeTerminalText() {
         const lines = [
