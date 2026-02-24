@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ghost</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 </head>
@@ -34,17 +35,11 @@
                 <span class="terminal-title">GhostV3.py</span>
             </div>
 
-            <div class="terminal-body">
-$ python ghostv3.py  
-Initializing modules...  
-Bypassing detection...  
-Loaded 12 tools successfully.  
-Ready.
-            </div>
+            <div class="terminal-body" id="hero-terminal-text"></div>
         </div>
 
-        <!-- Code Box BELOW terminal -->
-        <div class="code-box" style="margin-top:40px;">
+        <!-- Code Box (NOW BELOW TERMINAL) -->
+        <div class="code-box">
             <button class="copy-btn" onclick="copyCode(this)">Copy</button>
             <pre><code>pip install ghostv3</code></pre>
         </div>
@@ -54,41 +49,35 @@ Ready.
 
 
 <!-- FEATURES SECTION -->
-<section class="features" id="features">
-    <div class="section-header">
-        <h2>Powerful Features</h2>
-        <p>Everything you need in one multitool.</p>
-    </div>
+<section id="features" class="features">
+    <h2 class="section-title">Features</h2>
 
     <div class="features-grid">
 
         <div class="feature-card">
-            <div class="feature-icon">&gt;_</div>
             <h3>Fast Execution</h3>
-            <p>Optimized core engine for high-speed processing and instant command execution.</p>
+            <p>Optimized modules ensure ultra-fast processing and smooth performance.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon">[]</div>
             <h3>Modular System</h3>
-            <p>Enable or disable modules dynamically with full customization support.</p>
+            <p>Enable or disable modules easily with a flexible architecture.</p>
         </div>
 
         <div class="feature-card">
-            <div class="feature-icon">{ }</div>
             <h3>Clean Interface</h3>
-            <p>Minimal and powerful UI built for efficiency and smooth workflow.</p>
+            <p>Minimal and modern design built for clarity and usability.</p>
         </div>
 
     </div>
 </section>
-
 
 <footer>
     <p>&copy; 2026 hevji.</p>
 </footer>
 
 
+<!-- Copy Script -->
 <script>
 function copyCode(button) {
     const code = button.parentElement.querySelector("code").innerText;
@@ -98,7 +87,10 @@ function copyCode(button) {
 }
 </script>
 
+<!-- GSAP -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+<!-- Your Scripts -->
 <script src="js/main.js"></script>
 <script src="js/animations.js"></script>
 
