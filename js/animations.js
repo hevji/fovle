@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
     opacity: 0,
     duration: 0.6,
     ease: "power3.out"
-}, "-=0.3");
+    }, "-=0.3");
+console.log("Typing started");
 
     function typeTerminalText() {
         const lines = [
