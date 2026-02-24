@@ -7,7 +7,50 @@
     <link rel="stylesheet" href="css/styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
 </head>
-    <script>
+
+<body>
+
+<nav class="navbar">
+    <div class="nav-brand">Ghost</div>
+    <div class="nav-links">
+        <a href="download.html" class="btn-outline">Get Script</a>
+    </div>
+</nav>
+
+<header class="hero" id="hero">
+    <canvas id="hero-canvas"></canvas>
+
+    <div class="hero-content">
+        <h1 class="hero-title">Ghost V3</h1>
+        <p class="hero-subtitle">Best simple universal roblox script!</p>
+
+        <div class="terminal-mockup">
+            <div class="terminal-header">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="terminal-title">GhostV3.py</span>
+            </div>
+
+            <div class="terminal-body">
+
+                <div class="code-box">
+                    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                    <pre><code>loadstring(game:HttpGet("https://fovle.online/GhostV3.txt"))()</code></pre>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</header>
+
+<footer>
+    <p>&copy; 2026 hevji.</p>
+</footer>
+
+<!-- Scripts at bottom (correct place) -->
+<script>
 function copyCode(button) {
     const code = button.parentElement.querySelector("code").innerText;
     navigator.clipboard.writeText(code);
@@ -15,43 +58,10 @@ function copyCode(button) {
     setTimeout(() => button.innerText = "Copy", 1500);
 }
 </script>
-<body>
-    <nav class="navbar">
-        <div class="nav-brand">Ghost</div>
-        <div class="nav-links">
-            <a href="download.html" class="btn-outline">Get Script</a>
-        </div>
-    </nav>
 
-    <header class="hero" id="hero">
-        <canvas id="hero-canvas"></canvas>
-        <div class="hero-content">
-            <h1 class="hero-title">Ghost V3</h1>
-            <p class="hero-subtitle">Simple Universal script for all Roblox games!</p>
-            <div class="terminal-mockup">
-                <div class="terminal-header">
-                    <span class="dot red"></span>
-                    <span class="dot yellow"></span>
-                    <span class="dot green"></span>
-                    <span class="terminal-title">GhostV3.lua</span>
-                </div>
-                <div class="terminal-body" id="hero-terminal-text">
-                    </div>
-                                        <div class="code-box">
-    <button class="copy-btn" onclick="copyCode(this)">Copy</button>
-    <pre><code>
-loadstring(game:HttpGet("https://fovle.online/GhostV3.txt"))()
-    </code></pre>
-</div>
-        </div>
-    </header>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/animations.js"></script>
 
-    <footer>
-        <p>&copy; 2026 hevji.</p>
-    </footer>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="js/main.js"></script>
-    <script src="js/animations.js"></script>
 </body>
 </html>
